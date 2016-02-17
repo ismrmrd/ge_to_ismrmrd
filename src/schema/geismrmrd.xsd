@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<xs:schema xmlns="https://github.com/nih-fmrif/GEISMRMRD"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    elementFormDefault="qualified"
+    targetNamespace="https://github.com/nih-fmrif/GEISMRMRD">
+
+    <xs:element name="conversionConfiguration">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element maxOccurs="unbounded" minOccurs="1" name="sequenceMapping" type="sequenceMappingType"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:complexType name="sequenceMappingType">
+        <xs:all>
+            <xs:element name="psdname" type="xs:string"/>
+            <xs:element name="libraryPath" type="xs:string"/>
+            <xs:element name="className" type="xs:string"/>
+            <xs:element name="stylesheet" type="xs:string"/>
+            <xs:element name="reconConfigName" type="xs:string"/>
+        </xs:all>
+    </xs:complexType>
+
+</xs:schema>
