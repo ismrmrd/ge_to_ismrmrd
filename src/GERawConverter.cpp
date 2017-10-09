@@ -397,7 +397,7 @@ static std::string pfile_to_xml(const GERecon::Legacy::PfilePointer pfile)
     writer.addBooleanElement("IsConcatenated", pfile->IsConcatenated());
     writer.addBooleanElement("IsRawMode", pfile->IsRawMode());
     writer.formatElement("SliceCount", "%d", pfile->SliceCount());
-    writer.formatElement("SlicesPerAcq", "%d", pfile->SlicesPerAcq());
+    writer.formatElement("SlicesPerAcq", "%d", pfile->AcquiredSlicesPerAcq());
     writer.formatElement("EchoCount", "%d", pfile->EchoCount());
     writer.formatElement("ChannelCount", "%d", pfile->ChannelCount());
     writer.formatElement("PhaseCount", "%d", pfile->PhaseCount());
@@ -411,7 +411,7 @@ static std::string pfile_to_xml(const GERecon::Legacy::PfilePointer pfile)
     //writer.formatElement("SampleType", "%d", pfile->SampleType());
     writer.formatElement("BaselineViewCount", "%d", pfile->BaselineViewCount());
     writer.addBooleanElement("Is3D", pfile->Is3D());
-    writer.addBooleanElement("Is3DIfftDone", pfile->Is3DIfftDone());
+    // writer.addBooleanElement("Is3DIfftDone", pfile->Is3DIfftDone());
     writer.addBooleanElement("IsRadial3D", pfile->IsRadial3D());
     writer.formatElement("PlaneCount", "%d", pfile->PlaneCount());
     writer.formatElement("OutputPhaseCount", "%d", pfile->OutputPhaseCount());

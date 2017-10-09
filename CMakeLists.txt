@@ -15,7 +15,7 @@ find_package(LibXslt REQUIRED)
 find_package(LibXml2 REQUIRED)
 find_package(Ismrmrd REQUIRED)
 
-find_package(Orchestra)
+find_package(Orchestra REQUIRED)
 if (NOT ORCHESTRA_FOUND)
     message(WARNING "Orchestra SDK not found. Try setting $SDKTOP environment variable")
     return()

@@ -78,7 +78,7 @@ std::vector<ISMRMRD::Acquisition> GenericConverter::getAcquisitions(
     unsigned int nChannels = pfile->ChannelCount();
 
     // Make number of acquisitions to be converted
-    acqs.resize(pfile->SlicesPerAcq() * nEchoes * nPhases);
+    acqs.resize(pfile->AcquiredSlicesPerAcq() * nEchoes * nPhases);
 
     unsigned int acq_num = 0;
 
@@ -87,7 +87,7 @@ std::vector<ISMRMRD::Acquisition> GenericConverter::getAcquisitions(
     // size_t frame_size = pfile->ViewSize() / pfile->SampleSize();
     size_t frame_size = processingControl->Value<int>("AcquiredXRes");
 
-    for (int sliceCount = 0 ; sliceCount < pfile->SlicesPerAcq() ; sliceCount++)
+    for (int sliceCount = 0 ; sliceCount < pfile->AcquiredSlicesPerAcq() ; sliceCount++)
     {
         for (int echoCount = 0 ; echoCount < nEchoes ; echoCount++)
         {
