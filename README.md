@@ -29,9 +29,9 @@ Orchestra conversion tools
     export HDF5_ROOT=$SDKTOP/recon/3p/Linux/hdf5-1.8.12_dev_linux64
     ```
 
-   Any other version of HDF5 on the system can cause conflicts as cmake will find all versions, and
-   will cause issues or conflicts with the build process.  For these instructions to work, only the
-   HDF5 supplied with Orchestra should be on the system.
+    Any other version of HDF5 on the system can cause conflicts as cmake will find all versions, and
+    will cause issues or conflicts with the build process.  For these instructions to work, only the
+    HDF5 supplied with Orchestra should be on the system.
 
 1. Configure, compile, and install ISMRMRD:
 
