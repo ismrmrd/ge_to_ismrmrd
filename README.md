@@ -26,7 +26,7 @@ Orchestra conversion tools
 1.  Pre-define the location of HDF5 in order to use Orchestra's static HDF5 library:
 
     ```bash
-    export HDF5_ROOT=$SDKTOP/recon/3p/Linux/hdf5-1.8.12_dev_linux64
+    export HDF5_ROOT=$SDKTOP/include/recon/3p/Linux/hdf5-1.8.12_dev_linux64
     ```
 
     Any other version of HDF5 on the system can cause conflicts as cmake will find all versions, and
@@ -40,6 +40,18 @@ Orchestra conversion tools
     mkdir build
     cd build/
     cmake -D CMAKE_INSTALL_PREFIX=$ISMRMRD_HOME -D HDF5_USE_STATIC_LIBRARIES=yes -D CMAKE_EXE_LINKER_FLAGS="-lpthread -lz -ldl" ..
+    make install
+    cd ../
+    ```
+
+1. If using the Gadgetron for reconstruction, obtain and configure code similarly, to use the HDF5 supplied with Orchestra:
+
+    ```bash
+    git clone https://github.com/gadgetron/gadgetron.git
+    cd gadgetron/
+    mkdir build
+    cd build/
+    cmake   -D CMAKE_INSTALL_PREFIX=$GADGETRON_HOME   -D HDF5_USE_STATIC_LIBRARIES=yes   -D CMAKE_EXE_LINKER_FLAGS="-lpthread -lz -ldl" ..
     make install
     cd ../
     ```
