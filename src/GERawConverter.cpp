@@ -390,49 +390,49 @@ static std::string pfile_to_xml(const GERecon::Legacy::PfilePointer pfile)
 
     writer.startElement("Header");
 
-    writer.formatElement("RunNumber", "%d", pfile->RunNumber());
-    writer.formatElement("AcqCount", "%d", pfile->AcqCount());
-    writer.formatElement("PassCount", "%d", pfile->PassCount());
-    writer.formatElement("PfileCount", "%d", pfile->PfileCount());
-    writer.addBooleanElement("IsConcatenated", pfile->IsConcatenated());
-    writer.addBooleanElement("IsRawMode", pfile->IsRawMode());
-    writer.formatElement("SliceCount", "%d", pfile->SliceCount());
-    writer.formatElement("SlicesPerAcq", "%d", pfile->AcquiredSlicesPerAcq());
-    writer.formatElement("EchoCount", "%d", pfile->EchoCount());
-    writer.formatElement("ChannelCount", "%d", pfile->ChannelCount());
-    writer.formatElement("PhaseCount", "%d", pfile->PhaseCount());
-    writer.formatElement("XRes", "%d", pfile->XRes());
-    writer.formatElement("YRes", "%d", pfile->YRes());
-    writer.formatElement("RawDataSize", "%llu", pfile->RawDataSize());
-    writer.formatElement("TotalChannelSize", "%llu", pfile->TotalChannelSize());
-    writer.formatElement("ViewCount", "%u", pfile->ViewCount());
-    writer.formatElement("ViewSize", "%u", pfile->ViewSize());
-    writer.formatElement("SampleSize", "%u", pfile->SampleSize());
-    //writer.formatElement("SampleType", "%d", pfile->SampleType());
-    writer.formatElement("BaselineViewCount", "%d", pfile->BaselineViewCount());
-    writer.addBooleanElement("Is3D", pfile->Is3D());
-    // writer.addBooleanElement("Is3DIfftDone", pfile->Is3DIfftDone());
-    writer.addBooleanElement("IsRadial3D", pfile->IsRadial3D());
-    writer.formatElement("PlaneCount", "%d", pfile->PlaneCount());
-    writer.formatElement("OutputPhaseCount", "%d", pfile->OutputPhaseCount());
-    writer.formatElement("ShotCount", "%d", pfile->ShotCount());
-    writer.formatElement("RepetitionCount", "%d", pfile->RepetitionCount());
-    writer.addBooleanElement("IsEpi", pfile->IsEpi());
-    writer.addBooleanElement("IsPerChannelMultiVoxelSpectro", pfile->IsPerChannelMultiVoxelSpectro());
-    writer.addBooleanElement("IsMCSI", pfile->IsMCSI());
-    writer.addBooleanElement("IsSingleVoxel", pfile->IsSingleVoxel());
-    writer.addBooleanElement("IsDiffusionEpi", pfile->IsDiffusionEpi());
-    writer.addBooleanElement("IsMultiPhaseEpi", pfile->IsMultiPhaseEpi());
-    writer.addBooleanElement("IsFunctionalMri", pfile->IsFunctionalMri());
-    writer.addBooleanElement("IsTricks", pfile->IsTricks());
-    writer.addBooleanElement("IsCine", pfile->IsCine());
-    writer.addBooleanElement("IsCalibration", pfile->IsCalibration());
-    writer.addBooleanElement("IsMavric", pfile->IsMavric());
-    //writer.formatElement("NumEpiDiffusionNexes", "%d", pfile->NumEpiDiffusionNexes());
-    writer.addBooleanElement("IsTopDownEpi", pfile->IsTopDownEpi());
-    writer.addBooleanElement("IsBottomUpEpi", pfile->IsBottomUpEpi());
-    //writer.formatElement("NumberOfNexs", "%d", pfile->NumberOfNexs());
-    writer.formatElement("MultiPhaseType", "%d", pfile->MultiPhaseType()); // this is interleaved field
+    // writer.formatElement("RunNumber", "%d", pfile->RunNumber());
+    // writer.formatElement("AcqCount", "%d", pfile->AcqCount());
+    // writer.formatElement("PassCount", "%d", pfile->PassCount());
+    // writer.formatElement("PfileCount", "%d", pfile->PfileCount());
+    // writer.addBooleanElement("IsConcatenated", pfile->IsConcatenated());
+    // writer.addBooleanElement("IsRawMode", pfile->IsRawMode());
+    writer.formatElement("SliceCount", "%d", pfile->SliceCount()); // in Stylesheet
+    // writer.formatElement("SlicesPerAcq", "%d", pfile->AcquiredSlicesPerAcq());
+    writer.formatElement("EchoCount", "%d", pfile->EchoCount()); // in Stylesheet
+    writer.formatElement("ChannelCount", "%d", pfile->ChannelCount()); // in Stylesheet
+    // writer.formatElement("PhaseCount", "%d", pfile->PhaseCount());
+    // writer.formatElement("XRes", "%d", pfile->XRes());
+    // writer.formatElement("YRes", "%d", pfile->YRes());
+    // writer.formatElement("RawDataSize", "%llu", pfile->RawDataSize());
+    // writer.formatElement("TotalChannelSize", "%llu", pfile->TotalChannelSize());
+    // writer.formatElement("ViewCount", "%u", pfile->ViewCount());
+    // writer.formatElement("ViewSize", "%u", pfile->ViewSize());
+    // writer.formatElement("SampleSize", "%u", pfile->SampleSize());
+    // //writer.formatElement("SampleType", "%d", pfile->SampleType());
+    // writer.formatElement("BaselineViewCount", "%d", pfile->BaselineViewCount());
+    // writer.addBooleanElement("Is3D", pfile->Is3D());
+    // // writer.addBooleanElement("Is3DIfftDone", pfile->Is3DIfftDone());
+    // writer.addBooleanElement("IsRadial3D", pfile->IsRadial3D());
+    // writer.formatElement("PlaneCount", "%d", pfile->PlaneCount());
+    // writer.formatElement("OutputPhaseCount", "%d", pfile->OutputPhaseCount());
+    // writer.formatElement("ShotCount", "%d", pfile->ShotCount());
+    writer.formatElement("RepetitionCount", "%d", pfile->RepetitionCount()); // in Stylesheet
+    // writer.addBooleanElement("IsEpi", pfile->IsEpi());
+    // writer.addBooleanElement("IsPerChannelMultiVoxelSpectro", pfile->IsPerChannelMultiVoxelSpectro());
+    // writer.addBooleanElement("IsMCSI", pfile->IsMCSI());
+    // writer.addBooleanElement("IsSingleVoxel", pfile->IsSingleVoxel());
+    // writer.addBooleanElement("IsDiffusionEpi", pfile->IsDiffusionEpi());
+    // writer.addBooleanElement("IsMultiPhaseEpi", pfile->IsMultiPhaseEpi());
+    // writer.addBooleanElement("IsFunctionalMri", pfile->IsFunctionalMri());
+    // writer.addBooleanElement("IsTricks", pfile->IsTricks());
+    // writer.addBooleanElement("IsCine", pfile->IsCine());
+    // writer.addBooleanElement("IsCalibration", pfile->IsCalibration());
+    // writer.addBooleanElement("IsMavric", pfile->IsMavric());
+    // //writer.formatElement("NumEpiDiffusionNexes", "%d", pfile->NumEpiDiffusionNexes());
+    // writer.addBooleanElement("IsTopDownEpi", pfile->IsTopDownEpi());
+    // writer.addBooleanElement("IsBottomUpEpi", pfile->IsBottomUpEpi());
+    // //writer.formatElement("NumberOfNexs", "%d", pfile->NumberOfNexs());
+    // writer.formatElement("MultiPhaseType", "%d", pfile->MultiPhaseType()); // this is interleaved field
 
     const GERecon::Legacy::LxDownloadDataPointer lxData = pfile->DownloadData();
 
@@ -513,7 +513,6 @@ static std::string pfile_to_xml(const GERecon::Legacy::PfilePointer pfile)
     writer.addBooleanElement("NoFrequencyWrapData", processingControl->Value<bool>("NoFrequencyWrapData"));
     writer.addBooleanElement("NoPhaseWrapData", processingControl->Value<bool>("NoPhaseWrapData"));
     writer.formatElement("NumAcquisitions", "%d", processingControl->Value<int>("NumAcquisitions"));
-    writer.formatElement("NumEchoes", "%d", processingControl->Value<int>("NumEchoes"));
     writer.formatElement("DataSampleSize", "%d", processingControl->Value<int>("DataSampleSize")); // in bytes
                                                                                                    // nacq_points = ncoils * frame_size
 
