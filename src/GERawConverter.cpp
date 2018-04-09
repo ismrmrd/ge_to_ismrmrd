@@ -12,6 +12,8 @@
 #include <Orchestra/Common/PrepData.h>
 
 #include <Orchestra/Common/ImageCorners.h>
+#include <Orchestra/Common/ScanArchive.h>
+
 
 #include <Orchestra/Control/ProcessingControl.h>
 #include <Orchestra/Legacy/Pfile.h>
@@ -67,21 +69,33 @@ static std::string pfile_to_xml(const GERecon::Legacy::PfilePointer pfile);
  * @param fp raw FILE pointer to PFile
  * @throws std::runtime_error if P-File cannot be read
  */
-GERawConverter::GERawConverter(const std::string& pfilepath, bool logging)
+GERawConverter::GERawConverter(const std::string& rawFilePath, bool logging)
     : log_(logging)
 {
-    FILE* fp = NULL;
-    if (!(fp = fopen(pfilepath.c_str(), "rb"))) {
-        throw std::runtime_error("Failed to open " + pfilepath);
-    }
+    // FILE* fp = NULL;
+    // if (!(fp = fopen(rawFilePath.c_str(), "rb"))) {
+        // throw std::runtime_error("Failed to open " + rawFilePath);
+    // }
 
     psdname_ = ""; // TODO: find PSD Name in Orchestra Pfile class
     log_ << "PSDName: " << psdname_ << std::endl;
 
-    // Using Orchestra
-    pfile_ = GERecon::Legacy::Pfile::Create(pfilepath,
-            GERecon::Legacy::Pfile::AllAvailableAcquisitions,
-            GERecon::AnonymizationPolicy(GERecon::AnonymizationPolicy::None));
+    // Use Orchestra to figure out if P-File or ScanArchive
+    if(GERecon::ScanArchive::IsArchiveFilePath(rawFilePath)) {
+
+      std::cerr << "JAD: Trying to open ScanArchive HDF5 file: " << rawFilePath << std::endl;
+
+      GERecon::ScanArchivePointer const scanArchive = GERecon::ScanArchive::Create(rawFilePath, GESystem::Archive::LoadMode);
+
+      std::cout << "JAD: Trying to open h5 file: " << rawFilePath << ": done!" << std::endl;
+    }
+    else
+    {
+      std::cerr << "JAD: Opening PFILE: " << rawFilePath << std::endl;
+      pfile_ = GERecon::Legacy::Pfile::Create(rawFilePath,
+					      GERecon::Legacy::Pfile::AllAvailableAcquisitions,
+					      GERecon::AnonymizationPolicy(GERecon::AnonymizationPolicy::None));
+    }
 }
 
 /**
