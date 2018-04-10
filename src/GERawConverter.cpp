@@ -10,14 +10,15 @@
 
 #include <Orchestra/Common/ArchiveHeader.h>
 #include <Orchestra/Common/PrepData.h>
-
 #include <Orchestra/Common/ImageCorners.h>
 #include <Orchestra/Common/ScanArchive.h>
-
+#include <Orchestra/Common/SliceInfoTable.h>
 
 #include <Orchestra/Control/ProcessingControl.h>
+
 #include <Orchestra/Legacy/Pfile.h>
 #include <Orchestra/Legacy/DicomSeries.h>
+
 #include <Dicom/MR/Image.h>
 #include <Dicom/MR/ImageModule.h>
 #include <Dicom/MR/PrivateAcquisitionModule.h>
@@ -83,15 +84,15 @@ GERawConverter::GERawConverter(const std::string& rawFilePath, bool logging)
     log_ << "PSDName: " << psdname_ << std::endl;
 
     // Use Orchestra to figure out if P-File or ScanArchive
-    if(GERecon::ScanArchive::IsArchiveFilePath(rawFilePath))
+    if (GERecon::ScanArchive::IsArchiveFilePath(rawFilePath))
     {
         std::cerr << "JAD: Trying to open ScanArchive HDF5 file: " << rawFilePath << std::endl;
  
         GERecon::ScanArchivePointer const scanArchive = GERecon::ScanArchive::Create(rawFilePath, GESystem::Archive::LoadMode);
-
         lxData_ = boost::dynamic_pointer_cast<GERecon::Legacy::LxDownloadData>(scanArchive->LoadDownloadData());
 
-        processingControl_ = GERecon::Control::ProcessingControl::Create(rawFilePath);
+	boost::shared_ptr<GERecon::Legacy::LxControlSource> const controlSource = boost::make_shared<GERecon::Legacy::LxControlSource>(lxData_);
+	processingControl_ = controlSource->CreateOrchestraProcessingControl();
 
         std::cout << "JAD: Trying to open h5 file: " << rawFilePath << ": done!" << std::endl;
     }
@@ -404,7 +405,7 @@ static std::string ge_header_to_xml(GERecon::Legacy::PfilePointer pfile,
     writer.formatElement("SliceCount", "%d", processingControl->Value<int>("NumSlices")); // in Stylesheet
     writer.formatElement("EchoCount", "%d", processingControl->Value<int>("NumEchoes")); // in Stylesheet
     writer.formatElement("ChannelCount", "%d", processingControl->Value<int>("NumChannels")); // in Stylesheet
-    writer.formatElement("RepetitionCount", "%d", pfile->RepetitionCount()); // in Stylesheet
+    writer.formatElement("RepetitionCount", "%d", 1 /* pfile->RepetitionCount() */); // in Stylesheet
 
     std::cerr << "VR: Starting creation of Series element" << std::endl;
 
@@ -527,9 +528,13 @@ static std::string ge_header_to_xml(GERecon::Legacy::PfilePointer pfile,
     GERecon::ArchiveHeader archiveHeader("ScanArchive", prepData);
     // DEBUG: archiveHeader.Print(std::cout);
 
-    auto sliceOrientation = pfile->Orientation(0);
-    auto sliceCorners = pfile->Corners(0);
-    auto imageCorners = GERecon::ImageCorners(sliceCorners, sliceOrientation);
+    const GERecon::SliceInfoTable sliceTable = processingControl->ValueStrict<GERecon::SliceInfoTable>("SliceTable");
+    //JAD! const SliceCorners sliceCorners = sliceTable.AcquiredSliceCorners(geometricSliceIndex);
+    //JAD! const SliceOrientation sliceOrientation = sliceTable.SliceOrientation(geometricSliceIndex);
+    //JAD! const int numAcquisitions = processingControl->Value<int>("NumAcquisitions");
+
+    auto imageCorners = GERecon::ImageCorners(sliceTable.AcquiredSliceCorners(0),
+					      sliceTable.SliceOrientation(0));
     auto grayscaleImage = GEDicom::GrayscaleImage(128, 128);
     auto dicomImage = GERecon::Legacy::DicomImage(grayscaleImage, 0, imageCorners, series, *lxData);
     auto imageModule = dicomImage.ImageModule();

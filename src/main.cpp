@@ -8,7 +8,8 @@
 #include "ismrmrd/dataset.h"
 
 // Orchestra
-#include "System/Utilities/Main.h"
+#include <System/Utilities/ProgramOptions.h>
+
 
 // GE
 #include "GERawConverter.h"
@@ -18,7 +19,8 @@ namespace po = boost::program_options;
 
 int main (int argc, char *argv[])
 {
-    GESystem::Main(argc, argv);
+    GESystem::ProgramOptions().SetupCommandLine(argc,argv);
+
     std::string configfile, libpath, classname, stylesheet, pfile, outfile;
     std::string usage("pfile2ismrmrd [options] <input P-File>");
     std::string config_default = get_ge_tools_home() + "share/ge-tools/config/default.xml";
@@ -96,12 +98,14 @@ int main (int argc, char *argv[])
             return EXIT_FAILURE;
         }
 
+	//JAD! Something in this section causes a segfault on exit.
         try {
             converter->usePlugin(libpath, classname);
         } catch (const std::exception& e) {
             std::cerr << "Failed to override plugin: " << e.what() << std::endl;
             return EXIT_FAILURE;
         }
+
     } else {
         try {
             std::cout << "Using configuration: " << configfile << std::endl;
@@ -153,19 +157,14 @@ int main (int argc, char *argv[])
         converter->setRDS();
     }
 
-    unsigned int nviews = converter->getNumViews();
-    std::cout << "Num views = " << nviews << std::endl;
-    // for (unsigned int view_num = 0; view_num < nviews; view_num++) {
+    // get the first acquisition in this raw file
+    std::vector<ISMRMRD::Acquisition> acqs = converter->getAcquisitions(0);
 
-        // get the acquisitions corresponing to this view
-        std::vector<ISMRMRD::Acquisition> acqs = converter->getAcquisitions(0);
-
-        std::cout << "Number of acquisitions stored in HDF5 file is " << acqs.size() << std::endl;
-        // add these acquisitions to the hdf5 dataset
-        for (int n = 0; n < acqs.size(); n++) {
-            d.appendAcquisition(acqs.at(n));
-        }
-    // }
+    std::cout << "Number of acquisitions stored in HDF5 file is " << acqs.size() << std::endl;
+    // add these acquisitions to the hdf5 dataset
+    for (int n = 0; n < acqs.size(); n++) {
+        d.appendAcquisition(acqs.at(n));
+    }
 
     std::cout << "Swedished!" << std::endl;
 
