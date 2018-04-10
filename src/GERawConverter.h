@@ -76,6 +76,8 @@ private:
     std::string stylesheet_;
 
     GERecon::Legacy::PfilePointer pfile_;
+    GERecon::Legacy::LxDownloadDataPointer lxData_;
+    GERecon::Control::ProcessingControlPointer processingControl_;
     //std::shared_ptr<pfile_t> old_pfile_;
     std::shared_ptr<Plugin> plugin_;
 

@@ -61,7 +61,9 @@ const std::string g_schema = "\
     </xs:complexType>                                                       \
 </xs:schema>";
 
-static std::string pfile_to_xml(const GERecon::Legacy::PfilePointer pfile);
+static std::string ge_header_to_xml(GERecon::Legacy::PfilePointer pfile,
+                                    GERecon::Legacy::LxDownloadDataPointer lxData,
+                                    GERecon::Control::ProcessingControlPointer processingControl);
 
 /**
  * Creates a GERawConverter from an ifstream of the PFile header
@@ -81,40 +83,29 @@ GERawConverter::GERawConverter(const std::string& rawFilePath, bool logging)
     log_ << "PSDName: " << psdname_ << std::endl;
 
     // Use Orchestra to figure out if P-File or ScanArchive
-    if(GERecon::ScanArchive::IsArchiveFilePath(rawFilePath)) {
+    if(GERecon::ScanArchive::IsArchiveFilePath(rawFilePath))
+    {
+        std::cerr << "JAD: Trying to open ScanArchive HDF5 file: " << rawFilePath << std::endl;
+ 
+        GERecon::ScanArchivePointer const scanArchive = GERecon::ScanArchive::Create(rawFilePath, GESystem::Archive::LoadMode);
 
-      std::cerr << "JAD: Trying to open ScanArchive HDF5 file: " << rawFilePath << std::endl;
+        lxData_ = boost::dynamic_pointer_cast<GERecon::Legacy::LxDownloadData>(scanArchive->LoadDownloadData());
 
-      GERecon::ScanArchivePointer const scanArchive = GERecon::ScanArchive::Create(rawFilePath, GESystem::Archive::LoadMode);
+        processingControl_ = GERecon::Control::ProcessingControl::Create(rawFilePath);
 
-      std::cout << "JAD: Trying to open h5 file: " << rawFilePath << ": done!" << std::endl;
+        std::cout << "JAD: Trying to open h5 file: " << rawFilePath << ": done!" << std::endl;
     }
     else
     {
-      std::cerr << "JAD: Opening PFILE: " << rawFilePath << std::endl;
-      pfile_ = GERecon::Legacy::Pfile::Create(rawFilePath,
-					      GERecon::Legacy::Pfile::AllAvailableAcquisitions,
-					      GERecon::AnonymizationPolicy(GERecon::AnonymizationPolicy::None));
-    }
-}
+        std::cerr << "JAD: Opening PFILE: " << rawFilePath << std::endl;
+        pfile_ = GERecon::Legacy::Pfile::Create(rawFilePath,
+					        GERecon::Legacy::Pfile::AllAvailableAcquisitions,
+					        GERecon::AnonymizationPolicy(GERecon::AnonymizationPolicy::None));
 
-/**
- * Creates a GERawConverter from a pointer to the PFile header
- *
- * @param hdr_loc pointer to PFile header in memory
- */
-/*
-GERawConverter::GERawConverter(void *hdr_loc, bool logging)
-    : log_(logging)
-{
-    pfile_ = std::shared_ptr<pfile_t> (pfile_load_from_raw(hdr_loc, NULL, 0), pfile_destroy);
-    if (!pfile_) {
-        throw std::runtime_error("Failed to create P-File instance");
+        lxData_ = pfile_->DownloadData();
+        processingControl_ = pfile_->CreateOrchestraProcessingControl();
     }
-    psdname_ = std::string(pfile_->psd_name);
-    log_ << "PSDName: " << psdname_ << std::endl;
 }
-*/
 
 /**
  * Loads a sequence conversion plugin from full filepath
@@ -311,7 +302,7 @@ std::string GERawConverter::getIsmrmrdXMLHeader()
         throw std::runtime_error("No stylesheet configured");
     }
 
-    std::string pfile_header(pfile_to_xml(pfile_));
+    std::string pfile_header(ge_header_to_xml(pfile_, lxData_, processingControl_));
 
     // DEBUG: std::cout << pfile_header << std::endl;
 
@@ -396,59 +387,26 @@ void GERawConverter::setRDS(void)
 {
 }
 
-static std::string pfile_to_xml(const GERecon::Legacy::PfilePointer pfile)
+static std::string ge_header_to_xml(GERecon::Legacy::PfilePointer pfile,
+                                    GERecon::Legacy::LxDownloadDataPointer lxData,
+                                    GERecon::Control::ProcessingControlPointer processingControl)
 {
+    std::cerr << "VR: Starting conversion of raw file header to XML string" << std::endl;
+
     XMLWriter writer;
 
     writer.startDocument();
 
     writer.startElement("Header");
 
-    // writer.formatElement("RunNumber", "%d", pfile->RunNumber());
-    // writer.formatElement("AcqCount", "%d", pfile->AcqCount());
-    // writer.formatElement("PassCount", "%d", pfile->PassCount());
-    // writer.formatElement("PfileCount", "%d", pfile->PfileCount());
-    // writer.addBooleanElement("IsConcatenated", pfile->IsConcatenated());
-    // writer.addBooleanElement("IsRawMode", pfile->IsRawMode());
-    writer.formatElement("SliceCount", "%d", pfile->SliceCount()); // in Stylesheet
-    // writer.formatElement("SlicesPerAcq", "%d", pfile->AcquiredSlicesPerAcq());
-    writer.formatElement("EchoCount", "%d", pfile->EchoCount()); // in Stylesheet
-    writer.formatElement("ChannelCount", "%d", pfile->ChannelCount()); // in Stylesheet
-    // writer.formatElement("PhaseCount", "%d", pfile->PhaseCount());
-    // writer.formatElement("XRes", "%d", pfile->XRes());
-    // writer.formatElement("YRes", "%d", pfile->YRes());
-    // writer.formatElement("RawDataSize", "%llu", pfile->RawDataSize());
-    // writer.formatElement("TotalChannelSize", "%llu", pfile->TotalChannelSize());
-    // writer.formatElement("ViewCount", "%u", pfile->ViewCount());
-    // writer.formatElement("ViewSize", "%u", pfile->ViewSize());
-    // writer.formatElement("SampleSize", "%u", pfile->SampleSize());
-    // //writer.formatElement("SampleType", "%d", pfile->SampleType());
-    // writer.formatElement("BaselineViewCount", "%d", pfile->BaselineViewCount());
-    // writer.addBooleanElement("Is3D", pfile->Is3D());
-    // // writer.addBooleanElement("Is3DIfftDone", pfile->Is3DIfftDone());
-    // writer.addBooleanElement("IsRadial3D", pfile->IsRadial3D());
-    // writer.formatElement("PlaneCount", "%d", pfile->PlaneCount());
-    // writer.formatElement("OutputPhaseCount", "%d", pfile->OutputPhaseCount());
-    // writer.formatElement("ShotCount", "%d", pfile->ShotCount());
-    writer.formatElement("RepetitionCount", "%d", pfile->RepetitionCount()); // in Stylesheet
-    // writer.addBooleanElement("IsEpi", pfile->IsEpi());
-    // writer.addBooleanElement("IsPerChannelMultiVoxelSpectro", pfile->IsPerChannelMultiVoxelSpectro());
-    // writer.addBooleanElement("IsMCSI", pfile->IsMCSI());
-    // writer.addBooleanElement("IsSingleVoxel", pfile->IsSingleVoxel());
-    // writer.addBooleanElement("IsDiffusionEpi", pfile->IsDiffusionEpi());
-    // writer.addBooleanElement("IsMultiPhaseEpi", pfile->IsMultiPhaseEpi());
-    // writer.addBooleanElement("IsFunctionalMri", pfile->IsFunctionalMri());
-    // writer.addBooleanElement("IsTricks", pfile->IsTricks());
-    // writer.addBooleanElement("IsCine", pfile->IsCine());
-    // writer.addBooleanElement("IsCalibration", pfile->IsCalibration());
-    // writer.addBooleanElement("IsMavric", pfile->IsMavric());
-    // //writer.formatElement("NumEpiDiffusionNexes", "%d", pfile->NumEpiDiffusionNexes());
-    // writer.addBooleanElement("IsTopDownEpi", pfile->IsTopDownEpi());
-    // writer.addBooleanElement("IsBottomUpEpi", pfile->IsBottomUpEpi());
-    // //writer.formatElement("NumberOfNexs", "%d", pfile->NumberOfNexs());
-    // writer.formatElement("MultiPhaseType", "%d", pfile->MultiPhaseType()); // this is interleaved field
+    std::cerr << "VR: Starting creation of header section" << std::endl;
 
-    const GERecon::Legacy::LxDownloadDataPointer lxData = pfile->DownloadData();
+    writer.formatElement("SliceCount", "%d", processingControl->Value<int>("NumSlices")); // in Stylesheet
+    writer.formatElement("EchoCount", "%d", processingControl->Value<int>("NumEchoes")); // in Stylesheet
+    writer.formatElement("ChannelCount", "%d", processingControl->Value<int>("NumChannels")); // in Stylesheet
+    writer.formatElement("RepetitionCount", "%d", pfile->RepetitionCount()); // in Stylesheet
+
+    std::cerr << "VR: Starting creation of Series element" << std::endl;
 
     GERecon::Legacy::DicomSeries legacySeries(lxData);
     GEDicom::SeriesPointer series = legacySeries.Series();
@@ -468,6 +426,8 @@ static std::string pfile_to_xml(const GERecon::Legacy::PfilePointer pfile)
     //writer.formatElement("PatientOrientation", "%s", seriesModule->Orientation());
     writer.endElement();
 
+    std::cerr << "VR: Starting creation of Study element" << std::endl;
+
     GEDicom::StudyPointer study = series->Study();
     GEDicom::StudyModulePointer studyModule = study->GeneralModule();
     writer.startElement("Study");
@@ -480,6 +440,8 @@ static std::string pfile_to_xml(const GERecon::Legacy::PfilePointer pfile)
     writer.formatElement("AccessionNumber", "%s", studyModule->AccessionNumber().c_str());
     writer.formatElement("ReadingPhysician", "%s", studyModule->ReadingPhysician().c_str());
     writer.endElement();
+
+    std::cerr << "VR: Starting creation of Patient element" << std::endl;
 
     GEDicom::PatientStudyModulePointer patientStudyModule = study->PatientStudyModule();
     GEDicom::PatientPointer patient = study->Patient();
@@ -494,6 +456,8 @@ static std::string pfile_to_xml(const GERecon::Legacy::PfilePointer pfile)
     writer.formatElement("History", "%s", patientStudyModule->History().c_str());
     writer.endElement();
 
+    std::cerr << "VR: Starting creation of Equipment element" << std::endl;
+
     GEDicom::EquipmentPointer equipment = series->Equipment();
     GEDicom::EquipmentModulePointer equipmentModule = equipment->GeneralModule();
     writer.startElement("Equipment");
@@ -506,9 +470,6 @@ static std::string pfile_to_xml(const GERecon::Legacy::PfilePointer pfile)
     writer.formatElement("PpsPerformedStation", "%s", equipmentModule->PpsPerformedStation().c_str());
     writer.formatElement("PpsPerformedLocation", "%s", equipmentModule->PpsPerformedLocation().c_str());
     writer.endElement();
-
-
-    const GERecon::Control::ProcessingControlPointer processingControl(pfile->CreateOrchestraProcessingControl());
 
     writer.formatElement("AcquiredXRes", "%d", processingControl->Value<int>("AcquiredXRes"));
     writer.formatElement("AcquiredYRes", "%d", processingControl->Value<int>("AcquiredYRes"));
@@ -645,6 +606,8 @@ static std::string pfile_to_xml(const GERecon::Legacy::PfilePointer pfile)
     // TODO: rdb_hdr_user fields
 
     writer.endDocument();
+
+    std::cerr << "VR: Ending conversion of raw file header to XML string" << std::endl;
 
     return writer.getXML();
 }
