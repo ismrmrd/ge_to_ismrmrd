@@ -62,8 +62,7 @@ const std::string g_schema = "\
     </xs:complexType>                                                       \
 </xs:schema>";
 
-static std::string ge_header_to_xml(GERecon::Legacy::PfilePointer pfile,
-                                    GERecon::Legacy::LxDownloadDataPointer lxData,
+static std::string ge_header_to_xml(GERecon::Legacy::LxDownloadDataPointer lxData,
                                     GERecon::Control::ProcessingControlPointer processingControl);
 
 /**
@@ -75,11 +74,6 @@ static std::string ge_header_to_xml(GERecon::Legacy::PfilePointer pfile,
 GERawConverter::GERawConverter(const std::string& rawFilePath, bool logging)
     : log_(logging)
 {
-    // FILE* fp = NULL;
-    // if (!(fp = fopen(rawFilePath.c_str(), "rb"))) {
-        // throw std::runtime_error("Failed to open " + rawFilePath);
-    // }
-
     psdname_ = ""; // TODO: find PSD Name in Orchestra Pfile class
     log_ << "PSDName: " << psdname_ << std::endl;
 
@@ -303,9 +297,9 @@ std::string GERawConverter::getIsmrmrdXMLHeader()
         throw std::runtime_error("No stylesheet configured");
     }
 
-    std::string pfile_header(ge_header_to_xml(pfile_, lxData_, processingControl_));
+    std::string ge_raw_file_header(ge_header_to_xml(lxData_, processingControl_));
 
-    // DEBUG: std::cout << pfile_header << std::endl;
+    DEBUG: std::cout << "VR: Converted header as XML string is: " << ge_raw_file_header << std::endl;
 
     xmlSubstituteEntitiesDefault(1);
     xmlLoadExtDtdDefaultValue = 1;
@@ -324,7 +318,7 @@ std::string GERawConverter::getIsmrmrdXMLHeader()
     }
 
     std::shared_ptr<xmlDoc> pfile_doc = std::shared_ptr<xmlDoc>(
-            xmlParseMemory(pfile_header.c_str(), pfile_header.size()), xmlFreeDoc);
+            xmlParseMemory(ge_raw_file_header.c_str(), ge_raw_file_header.size()), xmlFreeDoc);
     if (!pfile_doc) {
         throw std::runtime_error("Failed to parse P-File XML");
     }
@@ -371,25 +365,7 @@ std::string GERawConverter::getReconConfigName(void)
     return std::string(recon_config_);
 }
 
-/**
- * Gets the number of views in the pfile
- */
-unsigned int GERawConverter::getNumViews(void)
-{
-  return pfile_->ViewCount();
-}
-
-/**
- * Sets the PFile origin to the RDS client
- *
- * TODO: implement!
- */
-void GERawConverter::setRDS(void)
-{
-}
-
-static std::string ge_header_to_xml(GERecon::Legacy::PfilePointer pfile,
-                                    GERecon::Legacy::LxDownloadDataPointer lxData,
+static std::string ge_header_to_xml(GERecon::Legacy::LxDownloadDataPointer lxData,
                                     GERecon::Control::ProcessingControlPointer processingControl)
 {
     std::cerr << "VR: Starting conversion of raw file header to XML string" << std::endl;

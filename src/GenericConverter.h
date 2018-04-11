@@ -15,7 +15,8 @@ public:
                GERecon::Legacy::Pfile* pfile, unsigned int acq_mode);
 
 protected:
-    virtual int get_view_idx(GERecon::Legacy::Pfile *pfile,
+    // virtual int get_view_idx(GERecon::Legacy::Pfile *pfile,
+    virtual int get_view_idx(GERecon::Control::ProcessingControlPointer processingControl,
                unsigned int view_num, ISMRMRD::EncodingCounters &idx);
 };
 

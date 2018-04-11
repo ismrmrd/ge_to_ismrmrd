@@ -9,8 +9,9 @@
 
 namespace PfileToIsmrmrd {
 
-int GenericConverter::get_view_idx(GERecon::Legacy::Pfile *pfile,
-        unsigned int view_num, ISMRMRD::EncodingCounters &idx)
+// int GenericConverter::get_view_idx(GERecon::Legacy::Pfile *pfile,
+int GenericConverter::get_view_idx(GERecon::Control::ProcessingControlPointer processingControl,
+                                   unsigned int view_num, ISMRMRD::EncodingCounters &idx)
 {
     // set all the ones we don't care about to zero
     idx.kspace_encode_step_2 = 0;
@@ -23,31 +24,38 @@ int GenericConverter::get_view_idx(GERecon::Legacy::Pfile *pfile,
         idx.user[n] = 0;
     }
 
-    const GERecon::Control::ProcessingControlPointer processingControl(pfile->CreateOrchestraProcessingControl());
-    unsigned int nframes = processingControl->Value<int>("AcquiredYRes");
+    // const GERecon::Control::ProcessingControlPointer processingControl(pfile->CreateOrchestraProcessingControl());
+    unsigned int nframes   = processingControl->Value<int>("AcquiredYRes");
+    unsigned int numSlices = processingControl->Value<int>("NumSlices");
 
     // Check the pfile header for the data order
     // OLD: if (pfile->dacq_ctrl & PF_RAW_COLLECT) {
-    if (pfile->IsRawMode()) {
-        // RDB_RAW_COLLECT bit is set, so data is in view order on disk
-        // Acquisition looping order is sequence dependent, as has to be
-        // implemented per sequence.
-        idx.repetition = view_num / (pfile->SliceCount() * nframes);
-        view_num = view_num % (pfile->SliceCount() * nframes);
+    // if (pfile->IsRawMode()) {
+        // // RDB_RAW_COLLECT bit is set, so data is in view order on disk
+        // // Acquisition looping order is sequence dependent, as has to be
+        // // implemented per sequence.
+        // // idx.repetition = view_num / (pfile->SliceCount() * nframes);
+        // // view_num = view_num % (pfile->SliceCount() * nframes);
 
-        idx.kspace_encode_step_1 = view_num / pfile->SliceCount();
-        view_num = view_num % pfile->SliceCount();
+        // // idx.kspace_encode_step_1 = view_num / pfile->SliceCount();
+        // // view_num = view_num % pfile->SliceCount();
 
-        idx.slice = view_num;
-    }
-    else {
+        // idx.repetition = view_num / (numSlices * nframes);
+        // view_num = view_num % (numSlices * nframes);
+
+        // idx.kspace_encode_step_1 = view_num / numSlices;
+        // view_num = view_num % numSlices;
+
+        // idx.slice = view_num;
+    // }
+    // else {
         // RDB_RAW_COLLECT bit is NOT set, so data is in default ge order on disk
         // Default looping order:
         // repetitionloop (nreps)
         //   sliceloop (SliceCount())
         //     mean baseline (1)
         //       kyloop (nframes)
-        idx.repetition = view_num / (pfile->SliceCount() * (1 + nframes));
+        idx.repetition = view_num / (numSlices * (1 + nframes));
         // view_num = view_num % (pfile->SliceCount() * (1 + nframes));
 
         // idx.slice = view_num / (1 + nframes);
@@ -60,7 +68,7 @@ int GenericConverter::get_view_idx(GERecon::Legacy::Pfile *pfile,
         }
         // this is a regular line (frame)
         // idx.kspace_encode_step_1 = view_num - 1;
-    }
+    // }
 
     return 1;
 }
@@ -73,21 +81,21 @@ std::vector<ISMRMRD::Acquisition> GenericConverter::getAcquisitions(
     std::vector<ISMRMRD::Acquisition> acqs;
 
     const GERecon::Control::ProcessingControlPointer processingControl(pfile->CreateOrchestraProcessingControl());
-    unsigned int nPhases = processingControl->Value<int>("AcquiredYRes");
-    unsigned int nEchoes = processingControl->Value<int>("NumEchoes");
-    unsigned int nChannels = pfile->ChannelCount();
+    unsigned int nPhases   = processingControl->Value<int>("AcquiredYRes");
+    unsigned int nEchoes   = processingControl->Value<int>("NumEchoes");
+    unsigned int nChannels = processingControl->Value<int>("NumChannels");
+    unsigned int numSlices = processingControl->Value<int>("NumSlices");
 
     // Make number of acquisitions to be converted
-    acqs.resize(pfile->AcquiredSlicesPerAcq() * nEchoes * nPhases);
+    acqs.resize(numSlices * nEchoes * nPhases);
 
     unsigned int acq_num = 0;
 
     // Orchestra API provides size in bytes.
     // frame_size is the number of complex points in a single channel
-    // size_t frame_size = pfile->ViewSize() / pfile->SampleSize();
     size_t frame_size = processingControl->Value<int>("AcquiredXRes");
 
-    for (int sliceCount = 0 ; sliceCount < pfile->AcquiredSlicesPerAcq() ; sliceCount++)
+    for (int sliceCount = 0 ; sliceCount < numSlices ; sliceCount++)
     {
         for (int echoCount = 0 ; echoCount < nEchoes ; echoCount++)
         {
@@ -130,7 +138,8 @@ std::vector<ISMRMRD::Acquisition> GenericConverter::getAcquisitions(
 
                 // Initialize the encoding counters for this acquisition.
                 ISMRMRD::EncodingCounters idx;
-                get_view_idx(pfile, 0, idx);
+                // get_view_idx(pfile, 0, idx);
+                get_view_idx(processingControl, 0, idx);
 
                 idx.slice = sliceCount;
                 idx.contrast  = echoCount;
@@ -140,7 +149,7 @@ std::vector<ISMRMRD::Acquisition> GenericConverter::getAcquisitions(
 
                 // Fill in the rest of the header
                 acq.clearAllFlags();
-                acq.measurement_uid() = pfile->RunNumber();
+                // acq.measurement_uid() = pfile->RunNumber();
                 acq.scan_counter() = acq_num;
                 acq.acquisition_time_stamp() = time(NULL); // TODO: can we get a timestamp?
                 for (int p=0; p<ISMRMRD::ISMRMRD_PHYS_STAMPS; p++) {

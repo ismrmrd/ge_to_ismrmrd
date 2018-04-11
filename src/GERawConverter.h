@@ -43,7 +43,6 @@ class GERawConverter
 {
 public:
     GERawConverter(const std::string& pfilepath, bool logging=false);
-    //GERawConverter(void *hdr_loc, bool logging=false);
 
     void usePlugin(const std::string& filename, const std::string& classname);
 
@@ -60,8 +59,6 @@ public:
     std::vector<ISMRMRD::Acquisition> getAcquisitions(unsigned int view_num);
 
     std::string getReconConfigName(void);
-    unsigned int getNumViews(void);
-    void setRDS(void);
 
 private:
     // Non-copyable
@@ -78,7 +75,6 @@ private:
     GERecon::Legacy::PfilePointer pfile_;
     GERecon::Legacy::LxDownloadDataPointer lxData_;
     GERecon::Control::ProcessingControlPointer processingControl_;
-    //std::shared_ptr<pfile_t> old_pfile_;
     std::shared_ptr<Plugin> plugin_;
 
     logstream log_;

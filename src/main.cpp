@@ -35,7 +35,6 @@ int main (int argc, char *argv[])
         ("plugin,p", po::value<std::string>(&classname)->default_value(""), "class/sequence name in library used for conversion")
         ("stylesheet,x", po::value<std::string>(&stylesheet)->default_value(stylesheet_default), "XSL stylesheet file mapping values provided by Orchestra to those needed by ISMRMRD")
         ("output,o", po::value<std::string>(&outfile)->default_value("testdata.h5"), "output HDF5 file")
-        ("rdsfile,r", "P-File from the RDS client")
         ("string,s", "only print the HDF5 XML header")
         ;
 
@@ -151,11 +150,6 @@ int main (int argc, char *argv[])
 
     // write the ISMRMRD header to the dataset
     d.writeHeader(xml_header);
-
-    // if the user has specified that this is an RDS file:
-    if (vm.count("rdsfile")) {
-        converter->setRDS();
-    }
 
     // get the first acquisition in this raw file
     std::vector<ISMRMRD::Acquisition> acqs = converter->getAcquisitions(0);
