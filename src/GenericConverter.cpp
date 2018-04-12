@@ -213,8 +213,8 @@ std::vector<ISMRMRD::Acquisition> GenericConverter::getAcquisitions(GERecon::Sca
 
    std::cerr << "VR: Starting H5 processing functions" << std::endl;
 
-   GERecon::ScanArchivePointer scanArchivePtr = GERecon::Acquisition::ArchiveStorage::Archive (scanArchive);
-   // GERecon::Acquisition::ArchiveStoragePointer archiveStoragePointer = GERecon::Acquisition::ArchiveStorage::Create(scanArchive);
+   GERecon::ScanArchivePointer scanArchivePtr(scanArchive);
+   GERecon::Acquisition::ArchiveStoragePointer archiveStoragePointer = GERecon::Acquisition::ArchiveStorage::Create(scanArchivePtr);
 
    // int const packetQuantity = archiveStoragePointer->AvailableControlCount();
    int packetQuantity = 10;
