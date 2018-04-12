@@ -51,6 +51,7 @@ foreach(libs
          Core
          Common
          System
+         Acquisition
        )
 
     message("Finding library: lib${libs}.a")

@@ -7,6 +7,11 @@
 
 #include "GenericConverter.h"
 
+struct LOADTEST {
+  LOADTEST()  { std::cerr << __FILE__ << ": shared object loaded" << std::endl; }
+  ~LOADTEST() { std::cerr << __FILE__ << ": shared object unloaded" << std::endl; }
+} loadTest;
+
 namespace PfileToIsmrmrd {
 
 // int GenericConverter::get_view_idx(GERecon::Legacy::Pfile *pfile,
@@ -214,10 +219,9 @@ std::vector<ISMRMRD::Acquisition> GenericConverter::getAcquisitions(GERecon::Sca
    std::cerr << "VR: Starting H5 processing functions" << std::endl;
 
    GERecon::ScanArchivePointer scanArchivePtr(scanArchive);
-   GERecon::Acquisition::ArchiveStoragePointer archiveStoragePointer = GERecon::Acquisition::ArchiveStorage::Create(scanArchivePtr);
+   //GERecon::Acquisition::ArchiveStoragePointer archiveStoragePointer = GERecon::Acquisition::ArchiveStorage::Create(scanArchivePtr);
 
-   // int const packetQuantity = archiveStoragePointer->AvailableControlCount();
-   int packetQuantity = 10;
+   int const packetQuantity = 10; //archiveStoragePointer->AvailableControlCount();
 
    int packetCount = 0;
    int viewIndex = 0;
