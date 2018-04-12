@@ -3,12 +3,12 @@
 // Boost
 #include <boost/program_options.hpp>
 
+// Orchestra
+#include <System/Utilities/ProgramOptions.h>
+
 // ISMRMRD
 #include "ismrmrd/ismrmrd.h"
 #include "ismrmrd/dataset.h"
-
-// Orchestra
-#include <System/Utilities/ProgramOptions.h>
 
 
 // GE

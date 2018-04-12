@@ -8,27 +8,6 @@
 #include <libxslt/transform.h>
 #include <libxslt/xsltutils.h>
 
-#include <Orchestra/Common/ArchiveHeader.h>
-#include <Orchestra/Common/PrepData.h>
-#include <Orchestra/Common/ImageCorners.h>
-#include <Orchestra/Common/ScanArchive.h>
-#include <Orchestra/Common/SliceInfoTable.h>
-
-#include <Orchestra/Control/ProcessingControl.h>
-
-#include <Orchestra/Legacy/Pfile.h>
-#include <Orchestra/Legacy/DicomSeries.h>
-
-#include <Dicom/MR/Image.h>
-#include <Dicom/MR/ImageModule.h>
-#include <Dicom/MR/PrivateAcquisitionModule.h>
-#include <Dicom/Patient.h>
-#include <Dicom/PatientModule.h>
-#include <Dicom/PatientStudyModule.h>
-#include <Dicom/Equipment.h>
-#include <Dicom/EquipmentModule.h>
-#include <Dicom/ImagePlaneModule.h>
-
 // Local
 #include "GERawConverter.h"
 #include "XMLWriter.h"
@@ -82,11 +61,13 @@ GERawConverter::GERawConverter(const std::string& rawFilePath, bool logging)
     {
         std::cerr << "JAD: Trying to open ScanArchive HDF5 file: " << rawFilePath << std::endl;
  
-        GERecon::ScanArchivePointer const scanArchive = GERecon::ScanArchive::Create(rawFilePath, GESystem::Archive::LoadMode);
-        lxData_ = boost::dynamic_pointer_cast<GERecon::Legacy::LxDownloadData>(scanArchive->LoadDownloadData());
+        scanArchive_ = GERecon::ScanArchive::Create(rawFilePath, GESystem::Archive::LoadMode);
+        lxData_ = boost::dynamic_pointer_cast<GERecon::Legacy::LxDownloadData>(scanArchive_->LoadDownloadData());
 
 	boost::shared_ptr<GERecon::Legacy::LxControlSource> const controlSource = boost::make_shared<GERecon::Legacy::LxControlSource>(lxData_);
 	processingControl_ = controlSource->CreateOrchestraProcessingControl();
+
+        rawObjectType_ = SCAN_ARCHIVE_RAW_TYPE;
 
         std::cout << "JAD: Trying to open h5 file: " << rawFilePath << ": done!" << std::endl;
     }
@@ -99,6 +80,8 @@ GERawConverter::GERawConverter(const std::string& rawFilePath, bool logging)
 
         lxData_ = pfile_->DownloadData();
         processingControl_ = pfile_->CreateOrchestraProcessingControl();
+
+        rawObjectType_ = PFILE_RAW_TYPE;
     }
 }
 
@@ -352,7 +335,15 @@ std::string GERawConverter::getIsmrmrdXMLHeader()
  */
 std::vector<ISMRMRD::Acquisition> GERawConverter::getAcquisitions(unsigned int view_num)
 {
-    return plugin_->getConverter()->getAcquisitions(pfile_.get(), view_num);
+   if (rawObjectType_ == SCAN_ARCHIVE_RAW_TYPE)
+   {
+      std::cerr << "VR: should be converting ScanArchive here" << std::endl;
+      return plugin_->getConverter()->getAcquisitions(scanArchive_.get(), view_num);
+   }
+   else
+   {
+      return plugin_->getConverter()->getAcquisitions(pfile_.get(), view_num);
+   }
 }
 
 /**

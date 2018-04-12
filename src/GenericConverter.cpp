@@ -207,6 +207,46 @@ std::vector<ISMRMRD::Acquisition> GenericConverter::getAcquisitions(
     return acqs;
 }
 
+std::vector<ISMRMRD::Acquisition> GenericConverter::getAcquisitions(GERecon::ScanArchive* scanArchive, unsigned int acq_mode)
+{
+   std::vector<ISMRMRD::Acquisition> acqs;
+
+   std::cerr << "VR: Starting H5 processing functions" << std::endl;
+
+   GERecon::ScanArchivePointer scanArchivePtr = GERecon::Acquisition::ArchiveStorage::Archive (scanArchive);
+   // GERecon::Acquisition::ArchiveStoragePointer archiveStoragePointer = GERecon::Acquisition::ArchiveStorage::Create(scanArchive);
+
+   // int const packetQuantity = archiveStoragePointer->AvailableControlCount();
+   int packetQuantity = 10;
+
+   int packetCount = 0;
+   int viewIndex = 0;
+   int acqType = 0;
+
+   while (packetCount < packetQuantity)
+   {
+      // GERecon::Acquisition::FrameControlPointer const thisPacket = archiveStoragePointer->NextFrameControl();
+
+      std::cerr << "VR: processing packet" << packetCount << std::endl;
+
+      /* if (thisPacket->Control().Opcode() == Acquisition::ProgrammableOpcode)
+      {
+         Acquisition::ProgrammableControlPacket const packetContents = thisPacket->Control().Packet().As<GERecon::Acquisition::ProgrammableControlPacket>();
+
+         viewIndex = Acquisition::GetPacketValue(packetContents.viewNumH, packetContents.viewNumL);
+
+         if (viewIndex == 0)
+            acqType = GERecon::Acquisition::BaselineFrame;
+         else
+            acqType = GERecon::Acquisition::ImageFrame;
+      } */
+
+      packetCount++;
+   }
+
+    return acqs;
+}
+
 SEQUENCE_CONVERTER_FACTORY_DECLARE(GenericConverter)
 
 } // namespace PfileToIsmrmrd

@@ -7,9 +7,6 @@
 // ISMRMRD
 #include "ismrmrd/ismrmrd.h"
 
-// Orchestra
-#include "Orchestra/Legacy/Pfile.h"
-
 // Local
 #include "Plugin.h"
 #include "SequenceConverter.h"
@@ -37,6 +34,13 @@ logstream& operator<<(logstream& s, std::ostream& (*f)(std::ostream&))
     if (s.enabled) { f(std::clog); }
     return s;
 }
+
+enum GE_RAW_TYPES
+{
+   SCAN_ARCHIVE_RAW_TYPE = 0,
+   PFILE_RAW_TYPE = 1,
+   MISC_RAW_TYPE = 99
+};
 
 
 class GERawConverter
@@ -75,6 +79,8 @@ private:
     GERecon::Legacy::PfilePointer pfile_;
     GERecon::Legacy::LxDownloadDataPointer lxData_;
     GERecon::Control::ProcessingControlPointer processingControl_;
+    GERecon::ScanArchivePointer scanArchive_;
+    int rawObjectType_; // to allow reference to a P-File or ScanArchive object
     std::shared_ptr<Plugin> plugin_;
 
     logstream log_;
