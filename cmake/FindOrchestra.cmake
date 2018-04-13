@@ -16,42 +16,27 @@ set (ORCHESTRA_INCLUDE_DIR ${ORCHESTRA_TOPDIR}/ $ENV{SDKTOP}/include/lx/include/
 set (ORCHESTRA_INCLUDE_DIRS $ENV{SDKTOP}/include/recon/3p/Linux/)
 
 foreach(libs
-         # Acquisition
-         # Arc
-         # Asset
-         # Calibration3D
-         # Cartesian2D
-         # Cartesian3D
-         # Clariview
-         # Epi
-         # EpiDiffusion
-         # EpiMultiPhase
-         # EpiReferenceScan
-         # Flex
-         # Gradwarp
-         # Pure1
-         # Pure2
-         # Scic
-         # SpectroCommon
-         # SpectroMCSI
-         # SpectroMCSILegacy
-         # SpectroMultiVoxel
-         # SpectroSingleVoxel
-         # Spiral
-         # SystemServicesInterface
-         Math
-         CalibrationCommon
-         Crucial
-         SystemServicesImplementation
-         Control
-         Dicom
+         Epi
+         EpiDiffusion
+         EpiMultiPhase
+         Asset
+         Arc
+         Cartesian2D
+         Gradwarp
          Legacy
-         Hdf5
-         Foundation
          Core
-         Common
-         System
+         CalibrationCommon
+         Foundation
          Acquisition
+         Control
+         Common
+         Crucial
+         Dicom
+         Hdf5
+         Math
+         SystemServicesImplementation
+         SystemServicesInterface
+         System
        )
 
     message("Finding library: lib${libs}.a")

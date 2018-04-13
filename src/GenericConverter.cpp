@@ -219,36 +219,43 @@ std::vector<ISMRMRD::Acquisition> GenericConverter::getAcquisitions(GERecon::Sca
    std::cerr << "VR: Starting H5 processing functions" << std::endl;
 
    GERecon::ScanArchivePointer scanArchivePtr(scanArchive);
-   //GERecon::Acquisition::ArchiveStoragePointer archiveStoragePointer = GERecon::Acquisition::ArchiveStorage::Create(scanArchivePtr);
+   scanArchivePtr->LoadSavedFiles();
+   GERecon::Acquisition::ArchiveStoragePointer archiveStoragePointer = GERecon::Acquisition::ArchiveStorage::Create(scanArchivePtr);
 
-   int const packetQuantity = 10; //archiveStoragePointer->AvailableControlCount();
+   int const packetQuantity = archiveStoragePointer->AvailableControlCount();
 
    int packetCount = 0;
    int viewIndex = 0;
+   int dataIndex = 0;
    int acqType = 0;
 
    while (packetCount < packetQuantity)
    {
-      // GERecon::Acquisition::FrameControlPointer const thisPacket = archiveStoragePointer->NextFrameControl();
+      GERecon::Acquisition::FrameControlPointer const thisPacket = archiveStoragePointer->NextFrameControl();
 
-      std::cerr << "VR: processing packet" << packetCount << std::endl;
+      std::cerr << "VR: processing packet " << packetCount << std::endl;
 
-      /* if (thisPacket->Control().Opcode() == Acquisition::ProgrammableOpcode)
+      if (thisPacket->Control().Opcode() == GERecon::Acquisition::ProgrammableOpcode)
       {
-         Acquisition::ProgrammableControlPacket const packetContents = thisPacket->Control().Packet().As<GERecon::Acquisition::ProgrammableControlPacket>();
+         GERecon::Acquisition::ProgrammableControlPacket const packetContents = thisPacket->Control().Packet().As<GERecon::Acquisition::ProgrammableControlPacket>();
 
-         viewIndex = Acquisition::GetPacketValue(packetContents.viewNumH, packetContents.viewNumL);
+         viewIndex = GERecon::Acquisition::GetPacketValue(packetContents.viewNumH, packetContents.viewNumL);
 
          if (viewIndex == 0)
             acqType = GERecon::Acquisition::BaselineFrame;
          else
+         {
             acqType = GERecon::Acquisition::ImageFrame;
-      } */
+            dataIndex++;
+         }
+      }
 
       packetCount++;
    }
 
-    return acqs;
+   std::cerr << "VR: number of data frames: " << dataIndex << std::endl;
+
+   return acqs;
 }
 
 SEQUENCE_CONVERTER_FACTORY_DECLARE(GenericConverter)
