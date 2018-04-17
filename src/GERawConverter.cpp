@@ -59,8 +59,6 @@ GERawConverter::GERawConverter(const std::string& rawFilePath, bool logging)
     // Use Orchestra to figure out if P-File or ScanArchive
     if (GERecon::ScanArchive::IsArchiveFilePath(rawFilePath))
     {
-        std::cerr << "JAD: Trying to open ScanArchive HDF5 file: " << rawFilePath << std::endl;
- 
         scanArchive_ = GERecon::ScanArchive::Create(rawFilePath, GESystem::Archive::LoadMode);
         lxData_ = boost::dynamic_pointer_cast<GERecon::Legacy::LxDownloadData>(scanArchive_->LoadDownloadData());
 
@@ -68,12 +66,9 @@ GERawConverter::GERawConverter(const std::string& rawFilePath, bool logging)
 	processingControl_ = controlSource->CreateOrchestraProcessingControl();
 
         rawObjectType_ = SCAN_ARCHIVE_RAW_TYPE;
-
-        std::cout << "JAD: Trying to open h5 file: " << rawFilePath << ": done!" << std::endl;
     }
     else
     {
-        std::cerr << "JAD: Opening PFILE: " << rawFilePath << std::endl;
         pfile_ = GERecon::Legacy::Pfile::Create(rawFilePath,
 					        GERecon::Legacy::Pfile::AllAvailableAcquisitions,
 					        GERecon::AnonymizationPolicy(GERecon::AnonymizationPolicy::None));
@@ -282,7 +277,7 @@ std::string GERawConverter::getIsmrmrdXMLHeader()
 
     std::string ge_raw_file_header(ge_header_to_xml(lxData_, processingControl_));
 
-    DEBUG: std::cout << "VR: Converted header as XML string is: " << ge_raw_file_header << std::endl;
+    // DEBUG: std::cout << "Converted header as XML string is: " << ge_raw_file_header << std::endl;
 
     xmlSubstituteEntitiesDefault(1);
     xmlLoadExtDtdDefaultValue = 1;
@@ -327,7 +322,7 @@ std::string GERawConverter::getIsmrmrdXMLHeader()
 
 
 /**
- * Gets the acquisitions corresponding to a view in memory (P-file).
+ * Gets the acquisitions corresponding to a view in memory.
  *
  * @param view_num View number to get
  * @param vacq Vector of acquisitions
@@ -337,7 +332,6 @@ std::vector<ISMRMRD::Acquisition> GERawConverter::getAcquisitions(unsigned int v
 {
    if (rawObjectType_ == SCAN_ARCHIVE_RAW_TYPE)
    {
-      std::cerr << "VR: should be converting ScanArchive here" << std::endl;
       return plugin_->getConverter()->getAcquisitions(scanArchive_.get(), view_num);
    }
    else
@@ -359,7 +353,7 @@ std::string GERawConverter::getReconConfigName(void)
 static std::string ge_header_to_xml(GERecon::Legacy::LxDownloadDataPointer lxData,
                                     GERecon::Control::ProcessingControlPointer processingControl)
 {
-    std::cerr << "VR: Starting conversion of raw file header to XML string" << std::endl;
+    // DEBUG: std::cerr << "Starting conversion of raw file header to XML string" << std::endl;
 
     XMLWriter writer;
 
@@ -367,14 +361,10 @@ static std::string ge_header_to_xml(GERecon::Legacy::LxDownloadDataPointer lxDat
 
     writer.startElement("Header");
 
-    std::cerr << "VR: Starting creation of header section" << std::endl;
-
-    writer.formatElement("SliceCount", "%d", processingControl->Value<int>("NumSlices")); // in Stylesheet
-    writer.formatElement("EchoCount", "%d", processingControl->Value<int>("NumEchoes")); // in Stylesheet
-    writer.formatElement("ChannelCount", "%d", processingControl->Value<int>("NumChannels")); // in Stylesheet
-    writer.formatElement("RepetitionCount", "%d", 1 /* pfile->RepetitionCount() */); // in Stylesheet
-
-    std::cerr << "VR: Starting creation of Series element" << std::endl;
+    writer.formatElement("SliceCount", "%d", processingControl->Value<int>("NumSlices"));
+    writer.formatElement("EchoCount", "%d", processingControl->Value<int>("NumEchoes"));
+    writer.formatElement("ChannelCount", "%d", processingControl->Value<int>("NumChannels"));
+    writer.formatElement("RepetitionCount", "%d", 1 /* pfile->RepetitionCount() */); // identify variable for this
 
     GERecon::Legacy::DicomSeries legacySeries(lxData);
     GEDicom::SeriesPointer series = legacySeries.Series();
@@ -394,8 +384,6 @@ static std::string ge_header_to_xml(GERecon::Legacy::LxDownloadDataPointer lxDat
     //writer.formatElement("PatientOrientation", "%s", seriesModule->Orientation());
     writer.endElement();
 
-    std::cerr << "VR: Starting creation of Study element" << std::endl;
-
     GEDicom::StudyPointer study = series->Study();
     GEDicom::StudyModulePointer studyModule = study->GeneralModule();
     writer.startElement("Study");
@@ -409,8 +397,6 @@ static std::string ge_header_to_xml(GERecon::Legacy::LxDownloadDataPointer lxDat
     writer.formatElement("ReadingPhysician", "%s", studyModule->ReadingPhysician().c_str());
     writer.endElement();
 
-    std::cerr << "VR: Starting creation of Patient element" << std::endl;
-
     GEDicom::PatientStudyModulePointer patientStudyModule = study->PatientStudyModule();
     GEDicom::PatientPointer patient = study->Patient();
     GEDicom::PatientModulePointer patientModule = patient->GeneralModule();
@@ -423,8 +409,6 @@ static std::string ge_header_to_xml(GERecon::Legacy::LxDownloadDataPointer lxDat
     writer.formatElement("Weight", "%s", patientStudyModule->Weight().c_str());
     writer.formatElement("History", "%s", patientStudyModule->History().c_str());
     writer.endElement();
-
-    std::cerr << "VR: Starting creation of Equipment element" << std::endl;
 
     GEDicom::EquipmentPointer equipment = series->Equipment();
     GEDicom::EquipmentModulePointer equipmentModule = equipment->GeneralModule();
@@ -490,15 +474,11 @@ static std::string ge_header_to_xml(GERecon::Legacy::LxDownloadDataPointer lxDat
     // writer.formatElement("ImageXRes", "%d", processingControl->Value<int>("ImageXRes"));
     // writer.formatElement("ImageYRes", "%d", processingControl->Value<int>("ImageYRes"));
 
-
-    GERecon::PrepData prepData(lxData);
-    GERecon::ArchiveHeader archiveHeader("ScanArchive", prepData);
+    // GERecon::PrepData prepData(lxData);
+    // GERecon::ArchiveHeader archiveHeader("ScanArchive", prepData);
     // DEBUG: archiveHeader.Print(std::cout);
 
     const GERecon::SliceInfoTable sliceTable = processingControl->ValueStrict<GERecon::SliceInfoTable>("SliceTable");
-    //JAD! const SliceCorners sliceCorners = sliceTable.AcquiredSliceCorners(geometricSliceIndex);
-    //JAD! const SliceOrientation sliceOrientation = sliceTable.SliceOrientation(geometricSliceIndex);
-    //JAD! const int numAcquisitions = processingControl->Value<int>("NumAcquisitions");
 
     auto imageCorners = GERecon::ImageCorners(sliceTable.AcquiredSliceCorners(0),
 					      sliceTable.SliceOrientation(0));
@@ -578,8 +558,6 @@ static std::string ge_header_to_xml(GERecon::Legacy::LxDownloadDataPointer lxDat
     // TODO: rdb_hdr_user fields
 
     writer.endDocument();
-
-    std::cerr << "VR: Ending conversion of raw file header to XML string" << std::endl;
 
     return writer.getXML();
 }

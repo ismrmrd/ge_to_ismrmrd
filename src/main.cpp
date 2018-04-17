@@ -1,3 +1,4 @@
+
 #include <cstdio>
 
 // Boost
@@ -97,7 +98,6 @@ int main (int argc, char *argv[])
             return EXIT_FAILURE;
         }
 
-	//JAD! Something in this section causes a segfault on exit.
         try {
             converter->usePlugin(libpath, classname);
         } catch (const std::exception& e) {
@@ -164,3 +164,4 @@ int main (int argc, char *argv[])
 
     return EXIT_SUCCESS;
 }
+
