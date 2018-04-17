@@ -7,10 +7,15 @@
 
 #include "GenericConverter.h"
 
+struct LOADTEST {
+  LOADTEST()  { std::cerr << __FILE__ << ": shared object loaded" << std::endl; }
+  ~LOADTEST() { std::cerr << __FILE__ << ": shared object unloaded" << std::endl; }
+} loadTest;
+
 namespace PfileToIsmrmrd {
 
-int GenericConverter::get_view_idx(GERecon::Legacy::Pfile *pfile,
-        unsigned int view_num, ISMRMRD::EncodingCounters &idx)
+int GenericConverter::get_view_idx(GERecon::Control::ProcessingControlPointer processingControl,
+                                   unsigned int view_num, ISMRMRD::EncodingCounters &idx)
 {
     // set all the ones we don't care about to zero
     idx.kspace_encode_step_2 = 0;
@@ -23,43 +28,14 @@ int GenericConverter::get_view_idx(GERecon::Legacy::Pfile *pfile,
         idx.user[n] = 0;
     }
 
-    const GERecon::Control::ProcessingControlPointer processingControl(pfile->CreateOrchestraProcessingControl());
-    unsigned int nframes = processingControl->Value<int>("AcquiredYRes");
+    unsigned int nframes   = processingControl->Value<int>("AcquiredYRes");
+    unsigned int numSlices = processingControl->Value<int>("NumSlices");
 
-    // Check the pfile header for the data order
-    // OLD: if (pfile->dacq_ctrl & PF_RAW_COLLECT) {
-    if (pfile->IsRawMode()) {
-        // RDB_RAW_COLLECT bit is set, so data is in view order on disk
-        // Acquisition looping order is sequence dependent, as has to be
-        // implemented per sequence.
-        idx.repetition = view_num / (pfile->SliceCount() * nframes);
-        view_num = view_num % (pfile->SliceCount() * nframes);
+    idx.repetition = view_num / (numSlices * (1 + nframes));
 
-        idx.kspace_encode_step_1 = view_num / pfile->SliceCount();
-        view_num = view_num % pfile->SliceCount();
-
-        idx.slice = view_num;
-    }
-    else {
-        // RDB_RAW_COLLECT bit is NOT set, so data is in default ge order on disk
-        // Default looping order:
-        // repetitionloop (nreps)
-        //   sliceloop (SliceCount())
-        //     mean baseline (1)
-        //       kyloop (nframes)
-        idx.repetition = view_num / (pfile->SliceCount() * (1 + nframes));
-        // view_num = view_num % (pfile->SliceCount() * (1 + nframes));
-
-        // idx.slice = view_num / (1 + nframes);
-        // view_num = view_num % (1 + nframes);
-
-        // put the frame number in kspace_encode_step_1
-        if (view_num < 1) {
-            // this is the mean baseline view return -1
-            return -1;
-        }
-        // this is a regular line (frame)
-        // idx.kspace_encode_step_1 = view_num - 1;
+    if (view_num < 1) {
+        // this is the mean baseline view return -1
+        return -1;
     }
 
     return 1;
@@ -67,35 +43,32 @@ int GenericConverter::get_view_idx(GERecon::Legacy::Pfile *pfile,
 
 
 
-std::vector<ISMRMRD::Acquisition> GenericConverter::getAcquisitions(
-        GERecon::Legacy::Pfile* pfile, unsigned int acq_mode)
+std::vector<ISMRMRD::Acquisition> GenericConverter::getAcquisitions(GERecon::Legacy::Pfile* pfile,
+                                                                    unsigned int acqMode)
 {
     std::vector<ISMRMRD::Acquisition> acqs;
 
     const GERecon::Control::ProcessingControlPointer processingControl(pfile->CreateOrchestraProcessingControl());
-    unsigned int nPhases = processingControl->Value<int>("AcquiredYRes");
-    unsigned int nEchoes = processingControl->Value<int>("NumEchoes");
-    unsigned int nChannels = pfile->ChannelCount();
+    unsigned int nPhases   = processingControl->Value<int>("AcquiredYRes");
+    unsigned int nEchoes   = processingControl->Value<int>("NumEchoes");
+    unsigned int nChannels = processingControl->Value<int>("NumChannels");
+    unsigned int numSlices = processingControl->Value<int>("NumSlices");
 
     // Make number of acquisitions to be converted
-    acqs.resize(pfile->AcquiredSlicesPerAcq() * nEchoes * nPhases);
+    acqs.resize(numSlices * nEchoes * nPhases);
 
     unsigned int acq_num = 0;
 
     // Orchestra API provides size in bytes.
     // frame_size is the number of complex points in a single channel
-    // size_t frame_size = pfile->ViewSize() / pfile->SampleSize();
     size_t frame_size = processingControl->Value<int>("AcquiredXRes");
 
-    for (int sliceCount = 0 ; sliceCount < pfile->AcquiredSlicesPerAcq() ; sliceCount++)
+    for (int sliceCount = 0 ; sliceCount < numSlices ; sliceCount++)
     {
         for (int echoCount = 0 ; echoCount < nEchoes ; echoCount++)
         {
             for (int phaseCount = 0 ; phaseCount < nPhases ; phaseCount++)
             {
-                // std::cout << "Processing acquisition " << acq_num
-                // << " phase count " << phaseCount << " slice count " << sliceCount << std::endl;
-
                 // Grab a reference to the acquisition
                 ISMRMRD::Acquisition& acq = acqs.at(acq_num);
 
@@ -104,7 +77,7 @@ std::vector<ISMRMRD::Acquisition> GenericConverter::getAcquisitions(
 
                 // Get data from P-file using KSpaceData object, and copy
                 // into ISMRMRD space.
-                for (int channelCount = 0 ; channelCount < nChannels ; channelCount++)
+                for (int channelID = 0 ; channelID < nChannels ; channelID++)
                 {
                     // VR + JAD - 2016.01.15 - looking at various schemes to stride and read in
                     // K-space data.
@@ -120,17 +93,17 @@ std::vector<ISMRMRD::Acquisition> GenericConverter::getAcquisitions(
                     // be consistent with ISMRMRD data type.  This implementation of KSpaceData
                     // is used for data acquired in the "native" GE order.
 
-                    auto kData = pfile->KSpaceData<float>(sliceCount, echoCount,
-                                     channelCount);
+                    auto kData = pfile->KSpaceData<float>(sliceCount, echoCount, channelID);
 
-                    // Need to check that this indexing of kData is correct, and it's not kData(phaseCount, i)
                     for (int i = 0 ; i < frame_size ; i++)
-                       acq.data(i, channelCount) = kData(i, phaseCount);
+                    {
+                       acq.data(i, channelID) = kData(i, phaseCount);
+                    }
                 }
 
                 // Initialize the encoding counters for this acquisition.
                 ISMRMRD::EncodingCounters idx;
-                get_view_idx(pfile, 0, idx);
+                get_view_idx(processingControl, 0, idx);
 
                 idx.slice = sliceCount;
                 idx.contrast  = echoCount;
@@ -140,7 +113,7 @@ std::vector<ISMRMRD::Acquisition> GenericConverter::getAcquisitions(
 
                 // Fill in the rest of the header
                 acq.clearAllFlags();
-                acq.measurement_uid() = pfile->RunNumber();
+                // acq.measurement_uid() = pfile->RunNumber();
                 acq.scan_counter() = acq_num;
                 acq.acquisition_time_stamp() = time(NULL); // TODO: can we get a timestamp?
                 for (int p=0; p<ISMRMRD::ISMRMRD_PHYS_STAMPS; p++) {
@@ -196,6 +169,126 @@ std::vector<ISMRMRD::Acquisition> GenericConverter::getAcquisitions(
     } // end of sliceCount loop
 
     return acqs;
+}
+
+
+
+std::vector<ISMRMRD::Acquisition> GenericConverter::getAcquisitions(GERecon::ScanArchive* scanArchive,
+                                                                    unsigned int acqMode)
+{
+   std::vector<ISMRMRD::Acquisition> acqs;
+
+   GERecon::ScanArchivePointer scanArchivePtr(scanArchive);
+   GERecon::Acquisition::ArchiveStoragePointer archiveStoragePointer = GERecon::Acquisition::ArchiveStorage::Create(scanArchivePtr);
+   GERecon::Legacy::LxDownloadDataPointer lxData = boost::dynamic_pointer_cast<GERecon::Legacy::LxDownloadData>(scanArchive->LoadDownloadData());
+   boost::shared_ptr<GERecon::Legacy::LxControlSource> const controlSource = boost::make_shared<GERecon::Legacy::LxControlSource>(lxData);
+   GERecon::Control::ProcessingControlPointer processingControl = controlSource->CreateOrchestraProcessingControl();
+
+   int const   packetQuantity = archiveStoragePointer->AvailableControlCount();
+
+   int            packetCount = 0;
+   int              dataIndex = 0;
+   int                acqType = 0;
+   unsigned int       nPhases = processingControl->Value<int>("AcquiredYRes");
+   unsigned int       nEchoes = processingControl->Value<int>("NumEchoes");
+   unsigned int     nChannels = processingControl->Value<int>("NumChannels");
+   unsigned int     numSlices = processingControl->Value<int>("NumSlices");
+   size_t          frame_size = processingControl->Value<int>("AcquiredXRes");
+
+   while (packetCount < packetQuantity)
+   {
+      // encoding IDs to fill ISMRMRD headers.
+      int   sliceID = 0;
+      int    viewID = 0;
+
+      GERecon::Acquisition::FrameControlPointer const thisPacket = archiveStoragePointer->NextFrameControl();
+
+      // Need to identify opcode(s) here that will mark acquisition / reference / control
+      if (thisPacket->Control().Opcode() != GERecon::Acquisition::ScanControlOpcode)
+      {
+         GERecon::Acquisition::ProgrammableControlPacket const packetContents = thisPacket->Control().Packet().As<GERecon::Acquisition::ProgrammableControlPacket>();
+
+         viewID  = GERecon::Acquisition::GetPacketValue(packetContents.viewNumH,  packetContents.viewNumL);
+         sliceID = GERecon::Acquisition::GetPacketValue(packetContents.sliceNumH, packetContents.sliceNumL);
+
+         if ((viewID < 1) || (viewID > nPhases))
+         {
+            acqType = GERecon::Acquisition::BaselineFrame;
+            // nothing else to be done here for basic 2D case
+         }
+         else
+         {
+            acqType = GERecon::Acquisition::ImageFrame;
+
+            acqs.resize(dataIndex + 1);
+
+            auto kData = thisPacket->Data();
+
+            // Grab a reference to the acquisition
+            ISMRMRD::Acquisition& acq = acqs.at(dataIndex);
+
+            // Set size of this data frame to receive raw data
+            acq.resize(frame_size, nChannels, 0);
+
+            for (int channelID = 0 ; channelID < nChannels ; channelID++)
+            {
+               for (int i = 0 ; i < frame_size ; i++)
+               {
+                  // The last dimension here in kData denotes the view
+                  // index in the control packet that one must stride
+                  // through to get data.  TODO - figure out if this
+                  // can be programatically determined, and if so, use
+                  // it. Will be needed for cases where multiple lines
+                  // of data are contained in a single packet.
+                  acq.data(i, channelID) = kData(i, channelID, 0);
+               }
+            }
+
+            // Initialize the encoding counters for this acquisition.
+            ISMRMRD::EncodingCounters idx;
+            get_view_idx(processingControl, 0, idx);
+
+            idx.slice                  = sliceID;
+            idx.contrast               = 1;
+            idx.kspace_encode_step_1   = viewID - 1;
+
+            acq.idx() = idx;
+
+            // Fill in the rest of the header
+            acq.clearAllFlags();
+            // acq.measurement_uid() = pfile->RunNumber();
+            acq.scan_counter() = dataIndex;
+            acq.acquisition_time_stamp() = time(NULL);
+            for (int p=0; p<ISMRMRD::ISMRMRD_PHYS_STAMPS; p++) {
+               acq.physiology_time_stamp()[p] = 0;
+            }
+            acq.available_channels()   = nChannels;
+            acq.discard_pre()          = 0;
+            acq.discard_post()         = 0;
+            acq.center_sample()        = frame_size/2;
+            acq.encoding_space_ref()   = 0;
+            // acq.sample_time_us()       = pfile->sample_time * 1e6;
+
+            for (int ch = 0 ; ch < nChannels ; ch++) {
+               acq.setChannelActive(ch);
+            }
+
+            // Set first acquisition flag
+            if (idx.kspace_encode_step_1 == 0)
+               acq.setFlag(ISMRMRD::ISMRMRD_ACQ_FIRST_IN_SLICE);
+
+            // Set last acquisition flag
+            if (idx.kspace_encode_step_1 == nPhases - 1)
+               acq.setFlag(ISMRMRD::ISMRMRD_ACQ_LAST_IN_SLICE);
+
+            dataIndex++;
+         }
+      }
+
+      packetCount++;
+   }
+
+   return acqs;
 }
 
 SEQUENCE_CONVERTER_FACTORY_DECLARE(GenericConverter)

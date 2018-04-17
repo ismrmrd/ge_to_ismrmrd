@@ -8,24 +8,6 @@
 #include <libxslt/transform.h>
 #include <libxslt/xsltutils.h>
 
-#include <Orchestra/Common/ArchiveHeader.h>
-#include <Orchestra/Common/PrepData.h>
-
-#include <Orchestra/Common/ImageCorners.h>
-
-#include <Orchestra/Control/ProcessingControl.h>
-#include <Orchestra/Legacy/Pfile.h>
-#include <Orchestra/Legacy/DicomSeries.h>
-#include <Dicom/MR/Image.h>
-#include <Dicom/MR/ImageModule.h>
-#include <Dicom/MR/PrivateAcquisitionModule.h>
-#include <Dicom/Patient.h>
-#include <Dicom/PatientModule.h>
-#include <Dicom/PatientStudyModule.h>
-#include <Dicom/Equipment.h>
-#include <Dicom/EquipmentModule.h>
-#include <Dicom/ImagePlaneModule.h>
-
 // Local
 #include "GERawConverter.h"
 #include "XMLWriter.h"
@@ -59,7 +41,8 @@ const std::string g_schema = "\
     </xs:complexType>                                                       \
 </xs:schema>";
 
-static std::string pfile_to_xml(const GERecon::Legacy::PfilePointer pfile);
+static std::string ge_header_to_xml(GERecon::Legacy::LxDownloadDataPointer lxData,
+                                    GERecon::Control::ProcessingControlPointer processingControl);
 
 /**
  * Creates a GERawConverter from an ifstream of the PFile header
@@ -67,40 +50,35 @@ static std::string pfile_to_xml(const GERecon::Legacy::PfilePointer pfile);
  * @param fp raw FILE pointer to PFile
  * @throws std::runtime_error if P-File cannot be read
  */
-GERawConverter::GERawConverter(const std::string& pfilepath, bool logging)
+GERawConverter::GERawConverter(const std::string& rawFilePath, bool logging)
     : log_(logging)
 {
-    FILE* fp = NULL;
-    if (!(fp = fopen(pfilepath.c_str(), "rb"))) {
-        throw std::runtime_error("Failed to open " + pfilepath);
-    }
-
     psdname_ = ""; // TODO: find PSD Name in Orchestra Pfile class
     log_ << "PSDName: " << psdname_ << std::endl;
 
-    // Using Orchestra
-    pfile_ = GERecon::Legacy::Pfile::Create(pfilepath,
-            GERecon::Legacy::Pfile::AllAvailableAcquisitions,
-            GERecon::AnonymizationPolicy(GERecon::AnonymizationPolicy::None));
-}
+    // Use Orchestra to figure out if P-File or ScanArchive
+    if (GERecon::ScanArchive::IsArchiveFilePath(rawFilePath))
+    {
+        scanArchive_ = GERecon::ScanArchive::Create(rawFilePath, GESystem::Archive::LoadMode);
+        lxData_ = boost::dynamic_pointer_cast<GERecon::Legacy::LxDownloadData>(scanArchive_->LoadDownloadData());
 
-/**
- * Creates a GERawConverter from a pointer to the PFile header
- *
- * @param hdr_loc pointer to PFile header in memory
- */
-/*
-GERawConverter::GERawConverter(void *hdr_loc, bool logging)
-    : log_(logging)
-{
-    pfile_ = std::shared_ptr<pfile_t> (pfile_load_from_raw(hdr_loc, NULL, 0), pfile_destroy);
-    if (!pfile_) {
-        throw std::runtime_error("Failed to create P-File instance");
+	boost::shared_ptr<GERecon::Legacy::LxControlSource> const controlSource = boost::make_shared<GERecon::Legacy::LxControlSource>(lxData_);
+	processingControl_ = controlSource->CreateOrchestraProcessingControl();
+
+        rawObjectType_ = SCAN_ARCHIVE_RAW_TYPE;
     }
-    psdname_ = std::string(pfile_->psd_name);
-    log_ << "PSDName: " << psdname_ << std::endl;
+    else
+    {
+        pfile_ = GERecon::Legacy::Pfile::Create(rawFilePath,
+					        GERecon::Legacy::Pfile::AllAvailableAcquisitions,
+					        GERecon::AnonymizationPolicy(GERecon::AnonymizationPolicy::None));
+
+        lxData_ = pfile_->DownloadData();
+        processingControl_ = pfile_->CreateOrchestraProcessingControl();
+
+        rawObjectType_ = PFILE_RAW_TYPE;
+    }
 }
-*/
 
 /**
  * Loads a sequence conversion plugin from full filepath
@@ -297,9 +275,9 @@ std::string GERawConverter::getIsmrmrdXMLHeader()
         throw std::runtime_error("No stylesheet configured");
     }
 
-    std::string pfile_header(pfile_to_xml(pfile_));
+    std::string ge_raw_file_header(ge_header_to_xml(lxData_, processingControl_));
 
-    // DEBUG: std::cout << pfile_header << std::endl;
+    // DEBUG: std::cout << "Converted header as XML string is: " << ge_raw_file_header << std::endl;
 
     xmlSubstituteEntitiesDefault(1);
     xmlLoadExtDtdDefaultValue = 1;
@@ -318,7 +296,7 @@ std::string GERawConverter::getIsmrmrdXMLHeader()
     }
 
     std::shared_ptr<xmlDoc> pfile_doc = std::shared_ptr<xmlDoc>(
-            xmlParseMemory(pfile_header.c_str(), pfile_header.size()), xmlFreeDoc);
+            xmlParseMemory(ge_raw_file_header.c_str(), ge_raw_file_header.size()), xmlFreeDoc);
     if (!pfile_doc) {
         throw std::runtime_error("Failed to parse P-File XML");
     }
@@ -344,7 +322,7 @@ std::string GERawConverter::getIsmrmrdXMLHeader()
 
 
 /**
- * Gets the acquisitions corresponding to a view in memory (P-file).
+ * Gets the acquisitions corresponding to a view in memory.
  *
  * @param view_num View number to get
  * @param vacq Vector of acquisitions
@@ -352,7 +330,14 @@ std::string GERawConverter::getIsmrmrdXMLHeader()
  */
 std::vector<ISMRMRD::Acquisition> GERawConverter::getAcquisitions(unsigned int view_num)
 {
-    return plugin_->getConverter()->getAcquisitions(pfile_.get(), view_num);
+   if (rawObjectType_ == SCAN_ARCHIVE_RAW_TYPE)
+   {
+      return plugin_->getConverter()->getAcquisitions(scanArchive_.get(), view_num);
+   }
+   else
+   {
+      return plugin_->getConverter()->getAcquisitions(pfile_.get(), view_num);
+   }
 }
 
 /**
@@ -365,76 +350,21 @@ std::string GERawConverter::getReconConfigName(void)
     return std::string(recon_config_);
 }
 
-/**
- * Gets the number of views in the pfile
- */
-unsigned int GERawConverter::getNumViews(void)
+static std::string ge_header_to_xml(GERecon::Legacy::LxDownloadDataPointer lxData,
+                                    GERecon::Control::ProcessingControlPointer processingControl)
 {
-  return pfile_->ViewCount();
-}
+    // DEBUG: std::cerr << "Starting conversion of raw file header to XML string" << std::endl;
 
-/**
- * Sets the PFile origin to the RDS client
- *
- * TODO: implement!
- */
-void GERawConverter::setRDS(void)
-{
-}
-
-static std::string pfile_to_xml(const GERecon::Legacy::PfilePointer pfile)
-{
     XMLWriter writer;
 
     writer.startDocument();
 
     writer.startElement("Header");
 
-    writer.formatElement("RunNumber", "%d", pfile->RunNumber());
-    writer.formatElement("AcqCount", "%d", pfile->AcqCount());
-    writer.formatElement("PassCount", "%d", pfile->PassCount());
-    writer.formatElement("PfileCount", "%d", pfile->PfileCount());
-    writer.addBooleanElement("IsConcatenated", pfile->IsConcatenated());
-    writer.addBooleanElement("IsRawMode", pfile->IsRawMode());
-    writer.formatElement("SliceCount", "%d", pfile->SliceCount());
-    writer.formatElement("SlicesPerAcq", "%d", pfile->AcquiredSlicesPerAcq());
-    writer.formatElement("EchoCount", "%d", pfile->EchoCount());
-    writer.formatElement("ChannelCount", "%d", pfile->ChannelCount());
-    writer.formatElement("PhaseCount", "%d", pfile->PhaseCount());
-    writer.formatElement("XRes", "%d", pfile->XRes());
-    writer.formatElement("YRes", "%d", pfile->YRes());
-    writer.formatElement("RawDataSize", "%llu", pfile->RawDataSize());
-    writer.formatElement("TotalChannelSize", "%llu", pfile->TotalChannelSize());
-    writer.formatElement("ViewCount", "%u", pfile->ViewCount());
-    writer.formatElement("ViewSize", "%u", pfile->ViewSize());
-    writer.formatElement("SampleSize", "%u", pfile->SampleSize());
-    //writer.formatElement("SampleType", "%d", pfile->SampleType());
-    writer.formatElement("BaselineViewCount", "%d", pfile->BaselineViewCount());
-    writer.addBooleanElement("Is3D", pfile->Is3D());
-    // writer.addBooleanElement("Is3DIfftDone", pfile->Is3DIfftDone());
-    writer.addBooleanElement("IsRadial3D", pfile->IsRadial3D());
-    writer.formatElement("PlaneCount", "%d", pfile->PlaneCount());
-    writer.formatElement("OutputPhaseCount", "%d", pfile->OutputPhaseCount());
-    writer.formatElement("ShotCount", "%d", pfile->ShotCount());
-    writer.formatElement("RepetitionCount", "%d", pfile->RepetitionCount());
-    writer.addBooleanElement("IsEpi", pfile->IsEpi());
-    writer.addBooleanElement("IsPerChannelMultiVoxelSpectro", pfile->IsPerChannelMultiVoxelSpectro());
-    writer.addBooleanElement("IsMCSI", pfile->IsMCSI());
-    writer.addBooleanElement("IsSingleVoxel", pfile->IsSingleVoxel());
-    writer.addBooleanElement("IsDiffusionEpi", pfile->IsDiffusionEpi());
-    writer.addBooleanElement("IsMultiPhaseEpi", pfile->IsMultiPhaseEpi());
-    writer.addBooleanElement("IsFunctionalMri", pfile->IsFunctionalMri());
-    writer.addBooleanElement("IsTricks", pfile->IsTricks());
-    writer.addBooleanElement("IsCine", pfile->IsCine());
-    writer.addBooleanElement("IsCalibration", pfile->IsCalibration());
-    writer.addBooleanElement("IsMavric", pfile->IsMavric());
-    //writer.formatElement("NumEpiDiffusionNexes", "%d", pfile->NumEpiDiffusionNexes());
-    writer.addBooleanElement("IsTopDownEpi", pfile->IsTopDownEpi());
-    writer.addBooleanElement("IsBottomUpEpi", pfile->IsBottomUpEpi());
-    //writer.formatElement("NumberOfNexs", "%d", pfile->NumberOfNexs());
-    writer.formatElement("MultiPhaseType", "%d", pfile->MultiPhaseType()); // this is interleaved field
-
-    const GERecon::Legacy::LxDownloadDataPointer lxData = pfile->DownloadData();
+    writer.formatElement("SliceCount", "%d", processingControl->Value<int>("NumSlices"));
+    writer.formatElement("EchoCount", "%d", processingControl->Value<int>("NumEchoes"));
+    writer.formatElement("ChannelCount", "%d", processingControl->Value<int>("NumChannels"));
+    writer.formatElement("RepetitionCount", "%d", 1 /* pfile->RepetitionCount() */); // identify variable for this
 
     GERecon::Legacy::DicomSeries legacySeries(lxData);
     GEDicom::SeriesPointer series = legacySeries.Series();
@@ -493,9 +423,6 @@ static std::string pfile_to_xml(const GERecon::Legacy::PfilePointer pfile)
     writer.formatElement("PpsPerformedLocation", "%s", equipmentModule->PpsPerformedLocation().c_str());
     writer.endElement();
 
-
-    const GERecon::Control::ProcessingControlPointer processingControl(pfile->CreateOrchestraProcessingControl());
-
     writer.formatElement("AcquiredXRes", "%d", processingControl->Value<int>("AcquiredXRes"));
     writer.formatElement("AcquiredYRes", "%d", processingControl->Value<int>("AcquiredYRes"));
     writer.formatElement("AcquiredZRes", "%d", processingControl->Value<int>("AcquiredZRes"));
@@ -513,7 +440,6 @@ static std::string pfile_to_xml(const GERecon::Legacy::PfilePointer pfile)
     writer.addBooleanElement("NoFrequencyWrapData", processingControl->Value<bool>("NoFrequencyWrapData"));
     writer.addBooleanElement("NoPhaseWrapData", processingControl->Value<bool>("NoPhaseWrapData"));
     writer.formatElement("NumAcquisitions", "%d", processingControl->Value<int>("NumAcquisitions"));
-    writer.formatElement("NumEchoes", "%d", processingControl->Value<int>("NumEchoes"));
     writer.formatElement("DataSampleSize", "%d", processingControl->Value<int>("DataSampleSize")); // in bytes
                                                                                                    // nacq_points = ncoils * frame_size
 
@@ -548,14 +474,14 @@ static std::string pfile_to_xml(const GERecon::Legacy::PfilePointer pfile)
     // writer.formatElement("ImageXRes", "%d", processingControl->Value<int>("ImageXRes"));
     // writer.formatElement("ImageYRes", "%d", processingControl->Value<int>("ImageYRes"));
 
-
-    GERecon::PrepData prepData(lxData);
-    GERecon::ArchiveHeader archiveHeader("ScanArchive", prepData);
+    // GERecon::PrepData prepData(lxData);
+    // GERecon::ArchiveHeader archiveHeader("ScanArchive", prepData);
     // DEBUG: archiveHeader.Print(std::cout);
 
-    auto sliceOrientation = pfile->Orientation(0);
-    auto sliceCorners = pfile->Corners(0);
-    auto imageCorners = GERecon::ImageCorners(sliceCorners, sliceOrientation);
+    const GERecon::SliceInfoTable sliceTable = processingControl->ValueStrict<GERecon::SliceInfoTable>("SliceTable");
+
+    auto imageCorners = GERecon::ImageCorners(sliceTable.AcquiredSliceCorners(0),
+					      sliceTable.SliceOrientation(0));
     auto grayscaleImage = GEDicom::GrayscaleImage(128, 128);
     auto dicomImage = GERecon::Legacy::DicomImage(grayscaleImage, 0, imageCorners, series, *lxData);
     auto imageModule = dicomImage.ImageModule();

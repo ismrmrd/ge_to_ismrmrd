@@ -1,14 +1,16 @@
+
 #include <cstdio>
 
 // Boost
 #include <boost/program_options.hpp>
 
+// Orchestra
+#include <System/Utilities/ProgramOptions.h>
+
 // ISMRMRD
 #include "ismrmrd/ismrmrd.h"
 #include "ismrmrd/dataset.h"
 
-// Orchestra
-#include "System/Utilities/Main.h"
 
 // GE
 #include "GERawConverter.h"
@@ -18,21 +20,22 @@ namespace po = boost::program_options;
 
 int main (int argc, char *argv[])
 {
-    GESystem::Main(argc, argv);
+    GESystem::ProgramOptions().SetupCommandLine(argc,argv);
+
     std::string configfile, libpath, classname, stylesheet, pfile, outfile;
     std::string usage("pfile2ismrmrd [options] <input P-File>");
     std::string config_default = get_ge_tools_home() + "share/ge-tools/config/default.xml";
+    std::string stylesheet_default = get_ge_tools_home() + "share/ge-tools/config/default.xsl";
 
     po::options_description basic("Basic Options");
     basic.add_options()
         ("help,h", "print help message")
         ("verbose,v", "enable verbose mode")
-        ("config,c", po::value<std::string>(&configfile)->default_value(config_default), "converter config file")
-        ("library,l", po::value<std::string>(&libpath)->default_value(""), "plugin shared library")
-        ("plugin,p", po::value<std::string>(&classname)->default_value(""), "plugin class name")
-        ("stylesheet,x", po::value<std::string>(&stylesheet)->default_value(""), "XSL stylesheet file")
+        ("library,l", po::value<std::string>(&libpath)->default_value(""), "name of library with converter plugin, or full path if not in $LD_LIBRARY_PATH")
+        ("config,c", po::value<std::string>(&configfile)->default_value(config_default), "XML configuration file mapping acquisition sequence to converter class")
+        ("plugin,p", po::value<std::string>(&classname)->default_value(""), "class/sequence name in library used for conversion")
+        ("stylesheet,x", po::value<std::string>(&stylesheet)->default_value(stylesheet_default), "XSL stylesheet file mapping values provided by Orchestra to those needed by ISMRMRD")
         ("output,o", po::value<std::string>(&outfile)->default_value("testdata.h5"), "output HDF5 file")
-        ("rdsfile,r", "P-File from the RDS client")
         ("string,s", "only print the HDF5 XML header")
         ;
 
@@ -101,6 +104,7 @@ int main (int argc, char *argv[])
             std::cerr << "Failed to override plugin: " << e.what() << std::endl;
             return EXIT_FAILURE;
         }
+
     } else {
         try {
             std::cout << "Using configuration: " << configfile << std::endl;
@@ -147,26 +151,17 @@ int main (int argc, char *argv[])
     // write the ISMRMRD header to the dataset
     d.writeHeader(xml_header);
 
-    // if the user has specified that this is an RDS file:
-    if (vm.count("rdsfile")) {
-        converter->setRDS();
+    // get the first acquisition in this raw file
+    std::vector<ISMRMRD::Acquisition> acqs = converter->getAcquisitions(0);
+
+    std::cout << "Number of acquisitions stored in HDF5 file is " << acqs.size() << std::endl;
+    // add these acquisitions to the hdf5 dataset
+    for (int n = 0; n < acqs.size(); n++) {
+        d.appendAcquisition(acqs.at(n));
     }
-
-    unsigned int nviews = converter->getNumViews();
-    std::cout << "Num views = " << nviews << std::endl;
-    // for (unsigned int view_num = 0; view_num < nviews; view_num++) {
-
-        // get the acquisitions corresponing to this view
-        std::vector<ISMRMRD::Acquisition> acqs = converter->getAcquisitions(0);
-
-        std::cout << "Number of acquisitions stored in HDF5 file is " << acqs.size() << std::endl;
-        // add these acquisitions to the hdf5 dataset
-        for (int n = 0; n < acqs.size(); n++) {
-            d.appendAcquisition(acqs.at(n));
-        }
-    // }
 
     std::cout << "Swedished!" << std::endl;
 
     return EXIT_SUCCESS;
 }
+
