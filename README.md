@@ -91,7 +91,7 @@ Orchestra conversion tools
 1. Similarly, a typical command line to convert an example ScanArchive file using this library is:
 
    ```bash
-   pfile2ismrmrd -v -l libp2i-generic.so -p GenericConverter -x $GE_TOOLS_HOME/share/ge-tools/config/default.xsl ScanArchive_FSE.7
+   pfile2ismrmrd -v -l libp2i-generic.so -p GenericConverter -x $GE_TOOLS_HOME/share/ge-tools/config/default.xsl ScanArchive_FSE.h5
    ```
 
    Sample raw data files are now in the 'sampleData' directory.

@@ -20,9 +20,10 @@ namespace po = boost::program_options;
 
 int main (int argc, char *argv[])
 {
-    GESystem::ProgramOptions().SetupCommandLine(argc,argv);
+    const GESystem::ProgramOptions commandLineOptions;
+    commandLineOptions.SetupCommandLine(argc, argv);
 
-    std::string configfile, libpath, classname, stylesheet, pfile, outfile;
+    std::string configfile, libpath, classname, stylesheet, rawFile, outfile;
     std::string usage("pfile2ismrmrd [options] <input P-File>");
     std::string config_default = get_ge_tools_home() + "share/ge-tools/config/default.xml";
     std::string stylesheet_default = get_ge_tools_home() + "share/ge-tools/config/default.xsl";
@@ -39,9 +40,11 @@ int main (int argc, char *argv[])
         ("string,s", "only print the HDF5 XML header")
         ;
 
+    commandLineOptions.AddOptions(basic);
+
     po::options_description input("Input Options");
     input.add_options()
-        ("input,i", po::value<std::string>(&pfile), "input P-File")
+        ("input,i", po::value<std::string>(&rawFile), "input P- or ScanArchive File")
         ;
 
     po::options_description all_options("Options");
@@ -66,10 +69,27 @@ int main (int argc, char *argv[])
 
     if (vm.count("help")) {
         std::cerr << usage << std::endl << visible_options << std::endl;
+
+         // Print System options (if available).  Code to iterate through
+         // a boost::program_options::variable_map was taken from:
+         //
+         //    https://stackoverflow.com/questions/21008893/boost-program-options-iterate-over-variables-map
+
+         // for (const auto& it : commandLineOptions.AllOptions()) {
+            // std::cout << it.first.c_str() << " ";
+            // auto& value = it.second.value();
+            // if (auto v = boost::any_cast<uint32_t>(&value))
+               // std::cout << *v;
+            // else if (auto v = boost::any_cast<std::string>(&value))
+               // std::cout << *v;
+            // else
+               // std::cout << "error";
+         // }
+
         return EXIT_SUCCESS;
     }
 
-    if (pfile.size() == 0) {
+    if (rawFile.size() == 0) {
         std::cerr << usage << std::endl;
         return EXIT_FAILURE;
     }
@@ -82,7 +102,7 @@ int main (int argc, char *argv[])
     // Create a new Converter and give it a plugin configuration
     std::shared_ptr<PfileToIsmrmrd::GERawConverter> converter;
     try {
-        converter = std::make_shared<PfileToIsmrmrd::GERawConverter>(pfile, verbose);
+        converter = std::make_shared<PfileToIsmrmrd::GERawConverter>(rawFile, verbose);
     } catch (const std::exception& e) {
         std::cerr << "Failed to instantiate converter: " << e.what() << std::endl;
         return EXIT_FAILURE;
