@@ -10,8 +10,6 @@ namespace PfileToIsmrmrd {
 class GenericConverter: public SequenceConverter
 {
 public:
-    SEQUENCE_CONVERTER_DECLARE(GenericConverter)
-
     virtual std::vector<ISMRMRD::Acquisition> getAcquisitions (GERecon::Legacy::Pfile* pfile,
                                                                unsigned int view_num);
 
