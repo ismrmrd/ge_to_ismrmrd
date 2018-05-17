@@ -79,6 +79,16 @@ std::vector<ISMRMRD::Acquisition> NIHepiConverter::getAcquisitions(GERecon::Scan
          Range kImgDataRange = Range(nRefViews, nRefViews + yAcq - 1);
 
          // std::cerr << "Num refViews is: " << nRefViews << std::endl;
+         // std::cerr << "Phase encode range of this packet of data is: " << kData.extent(2) << std::endl;
+
+         if (viewSkip < 0)
+         {
+            for (int channelID = 0 ; channelID < nChannels ; channelID++)
+            {
+               ComplexFloatMatrix thisChannel = kData(Range::all(), channelID, Range::all());
+               Flip(thisChannel, 1);
+            }
+         }
 
          if (nRefViews > 0)
          {
@@ -107,6 +117,8 @@ std::vector<ISMRMRD::Acquisition> NIHepiConverter::getAcquisitions(GERecon::Scan
                kRefData(Range::all(), Range::all(), channelID) = kData(Range::all(), channelID, kRefDataRange);
                ComplexFloatMatrix tempRefData = kRefData(Range::all(), Range::all(), channelID);
                rowFlipPlugin.ApplyReferenceDataRowFlip(tempRefData);
+
+               // std::cerr << "This chunk of reference data is: " << tempRefData << std::endl;
             }
          }
 
@@ -138,6 +150,8 @@ std::vector<ISMRMRD::Acquisition> NIHepiConverter::getAcquisitions(GERecon::Scan
                {
                   acq.data(i, channelID) = kImgData(i, viewID, channelID);
                }
+
+               acq.setChannelActive(channelID);
             }
 
             // Initialize the encoding counters for this acquisition.
@@ -164,8 +178,6 @@ std::vector<ISMRMRD::Acquisition> NIHepiConverter::getAcquisitions(GERecon::Scan
             acq.center_sample()        = frame_size/2;
             acq.encoding_space_ref()   = 0;
             // acq.sample_time_us()       = pfile->sample_time * 1e6;
-
-            // acq.setChannelActive(channelID);
 
             // Set first acquisition flag
             if (idx.kspace_encode_step_1 == 0)
