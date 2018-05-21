@@ -1,5 +1,5 @@
 
-/** @file 2dfastConverter.cpp */
+/** @file NIHepiConverter.cpp */
 
 #include "epiConverter.h"
 
@@ -17,8 +17,6 @@ std::vector<ISMRMRD::Acquisition> NIHepiConverter::getAcquisitions(GERecon::Lega
 std::vector<ISMRMRD::Acquisition> NIHepiConverter::getAcquisitions(GERecon::ScanArchive* scanArchive,
                                                                    unsigned int acqMode)
 {
-   std::vector<ISMRMRD::Acquisition> acqs;
-
    std::cerr << "Using NIHepi ScanArchive converter." << std::endl;
 
    GERecon::ScanArchivePointer scanArchivePtr(scanArchive);
@@ -36,8 +34,6 @@ std::vector<ISMRMRD::Acquisition> NIHepiConverter::getAcquisitions(GERecon::Scan
 
    int const   packetQuantity = archiveStoragePointer->AvailableControlCount();
 
-   int            packetCount = 0;
-   int              dataIndex = 0;
    int                acqType = 0;
    unsigned int       nEchoes = processingControl->Value<int>("NumEchoes");
    unsigned int     nChannels = processingControl->Value<int>("NumChannels");
@@ -52,7 +48,10 @@ std::vector<ISMRMRD::Acquisition> NIHepiConverter::getAcquisitions(GERecon::Scan
    const RowFlipParametersPointer rowFlipper = boost::make_shared<RowFlipParameters>(yAcq + nRefViews);
    RowFlipPlugin rowFlipPlugin(rowFlipper, *processingControl);
 
-   while (packetCount < packetQuantity)
+   int dataIndex = 0;
+   std::vector<ISMRMRD::Acquisition> acqs;
+
+   for (int packetCount=0; packetCount < packetQuantity; packetCount++)
    {
       // encoding IDs to fill ISMRMRD headers.
       int   sliceID = 0;
@@ -71,30 +70,11 @@ std::vector<ISMRMRD::Acquisition> NIHepiConverter::getAcquisitions(GERecon::Scan
          sliceID  =           GERecon::Acquisition::GetPacketValue(packetContents.sliceNumH, packetContents.sliceNumL);
 
          acqType = GERecon::Acquisition::ImageFrame;
+	 auto pktData = thisPacket->Data();
 
-         auto kData = thisPacket->Data();
-         ComplexFloatCube kRefData(frame_size, nRefViews, nChannels);
-         ComplexFloatCube kImgData(frame_size, yAcq, nChannels);
-         Range kRefDataRange = Range(0, nRefViews - 1);
-         Range kImgDataRange = Range(nRefViews, nRefViews + yAcq - 1);
-
-         // std::cerr << "Num refViews is: " << nRefViews << std::endl;
-         // std::cerr << "Phase encode range of this packet of data is: " << kData.extent(2) << std::endl;
-
-         if (viewSkip < 0)
-         {
-            for (int channelID = 0 ; channelID < nChannels ; channelID++)
-            {
-               ComplexFloatMatrix thisChannel = kData(Range::all(), channelID, Range::all());
-               Flip(thisChannel, 1);
-            }
-         }
-
+#ifdef NIH_DEBUG
          if (nRefViews > 0)
          {
-            int viewStart = 0;
-            int   viewEnd = 0;
-
             if (topViews > 0)
             {
                kRefDataRange   = Range(fromStart, topViews - 1);
@@ -111,61 +91,61 @@ std::vector<ISMRMRD::Acquisition> NIHepiConverter::getAcquisitions(GERecon::Scan
                kRefDataRange = Range();
 
             kImgDataRange = Range(viewStart, viewEnd);
-
-            for (int channelID = 0 ; channelID < nChannels ; channelID++)
-            {
-               kRefData(Range::all(), Range::all(), channelID) = kData(Range::all(), channelID, kRefDataRange);
-               ComplexFloatMatrix tempRefData = kRefData(Range::all(), Range::all(), channelID);
-               rowFlipPlugin.ApplyReferenceDataRowFlip(tempRefData);
-
-               // std::cerr << "This chunk of reference data is: " << tempRefData << std::endl;
-            }
          }
 
-         // Row-flip each channel of data in place, but use a reference into the data,
-         // here 'tempKImageData', to refer to data for rowFlipPlugin. Same done for
-         // reference data above.
+         // std::cout << "Start of ref range is " << kRefDataRange.first() << std::endl;
+         // std::cout << "End   of ref range is " << kRefDataRange.last()  << std::endl;
+         // std::cout << "Start of img range is " << kImgDataRange.first() << std::endl;
+         // std::cout << "End   of img range is " << kImgDataRange.last()  << std::endl;
+#endif
+
+	 // Transpose the pktData - swapping channel (2) and phase (1) dimensions. This does not move data around in
+         // memory - this just manipulates the strides.
+	 pktData.transposeSelf( 0, 2, 1 );
+
+	 // Flip Y dimension (for all x samples and all channels)
+	 if (viewSkip < 0) {
+	    pktData.reverseSelf(1);
+	    // std::cout << "Data was FLIPPED alonig y-axis using reverseSelf()\n";
+	 }
+	 // else std::cout << "Data not flipped\n";
+
+	 // Copy (and sort) the packet data into a new array, kdata.
+	 ComplexFloatCube kData( pktData.shape() );
+	 kData = pktData;
+
+	 // Do the row-flipping.
+	 //
+	 // Note: Using ApplyImageDataRowFlip seems to work for all
+	 // rows (image and reference)
          for (int channelID = 0 ; channelID < nChannels ; channelID++)
          {
-            kImgData(Range::all(), Range::all(), channelID) = kData(Range::all(), channelID, kImgDataRange);
-            ComplexFloatMatrix tempKImageData = kImgData(Range::all(), Range::all(), channelID);
-            rowFlipPlugin.ApplyImageDataRowFlip(tempKImageData);
+	   ComplexFloatMatrix tempData = kData(Range::all(), Range::all(), channelID);
+	   rowFlipPlugin.ApplyImageDataRowFlip(tempData);
          }
+	 // std::cout << "ApplyImageDataRowFlip done\n";
 
-         // Now copy data out of ScanArchive into ISMRMRD object
-         for (viewID = 0 ; viewID < yAcq ; viewID++)
+         // Copy data out of ScanArchive into ISMRMRD object
+	 int totalViews = topViews + yAcq + bottomViews;
+
+         for (int view = 0; view < totalViews; ++view)
          {
-            // Create another acquisition element for this chunk of data
+            // Create a new acquisition object for this chunk of data
             acqs.resize(dataIndex + 1);
 
             // Grab a reference to the acquisition
-            ISMRMRD::Acquisition& acq = acqs.at(dataIndex);
+            ISMRMRD::Acquisition &acq = acqs.at(dataIndex);
 
             // Set size of this data frame to receive raw data
             acq.resize(frame_size, nChannels, 0);
-
-            for (int channelID = 0 ; channelID < nChannels ; channelID++)
-            {
-               for (int i = 0 ; i < frame_size ; i++)
-               {
-                  acq.data(i, channelID) = kImgData(i, viewID, channelID);
-               }
-
-               acq.setChannelActive(channelID);
-            }
+            acq.clearAllFlags();
 
             // Initialize the encoding counters for this acquisition.
-            ISMRMRD::EncodingCounters idx;
+            ISMRMRD::EncodingCounters &idx = acq.idx();
             get_view_idx(processingControl, 0, idx);
-
             idx.slice                  = sliceID;
-            idx.contrast               = 1;
-            idx.kspace_encode_step_1   = viewID;
+            idx.contrast               = 1;          // JAD: Should this be 0?
 
-            acq.idx() = idx;
-
-            // Fill in the rest of the header
-            acq.clearAllFlags();
             // acq.measurement_uid() = pfile->RunNumber();
             acq.scan_counter() = dataIndex;
             acq.acquisition_time_stamp() = time(NULL);
@@ -180,20 +160,37 @@ std::vector<ISMRMRD::Acquisition> NIHepiConverter::getAcquisitions(GERecon::Scan
             // acq.sample_time_us()       = pfile->sample_time * 1e6;
 
             // Set first acquisition flag
-            if (idx.kspace_encode_step_1 == 0)
+            if (view == 0)
                acq.setFlag(ISMRMRD::ISMRMRD_ACQ_FIRST_IN_SLICE);
 
             // Set last acquisition flag
-            if (idx.kspace_encode_step_1 == yAcq - 1)
+            if (view == totalViews - 1)
                acq.setFlag(ISMRMRD::ISMRMRD_ACQ_LAST_IN_SLICE);
+
+	    if (view < topViews || view > topViews + yAcq) {
+	       // This is a reference view
+               acq.setFlag(ISMRMRD::ISMRMRD_ACQ_IS_PHASECORR_DATA);
+	       idx.kspace_encode_step_1 = yAcq/2;
+	    }
+	    else {
+	       // This view is an image view
+	       idx.kspace_encode_step_1 = view - topViews;
+	    }
+
+	    // Copy view data to ISMRMRD Acq data packet
+            for (int channelID = 0 ; channelID < nChannels ; channelID++)
+            {
+               for (int x = 0 ; x < frame_size ; x++)
+               {
+                  acq.data(x, channelID) = kData(x, view, channelID);
+               }
+               acq.setChannelActive(channelID);
+            }
 
             dataIndex++;
          }
       }
-
-      packetCount++;
    }
-
    return acqs;
 }
 
