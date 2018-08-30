@@ -35,7 +35,7 @@ target_link_libraries(${GENERIC_PLUGIN}
 install(TARGETS ${GENERIC_PLUGIN} DESTINATION lib)
 install(FILES GenericConverter.h DESTINATION include/ge-tools)
 
-install(FILES config/default.xml config/default.xsl
+install(DIRECTORY config/
         DESTINATION share/ge-tools/config)
 
 add_subdirectory(NIHPlugins)

@@ -361,6 +361,23 @@ static std::string ge_header_to_xml(GERecon::Legacy::LxDownloadDataPointer lxDat
 
     writer.startElement("Header");
 
+    writer.addBooleanElement("is3DAcquisition", processingControl->Value<bool>("Is3DAcquisition"));
+    writer.addBooleanElement("isCalibration",   lxData->IsCalibration());
+    writer.addBooleanElement("isArc",           lxData->IsArc());
+    writer.addBooleanElement("isEpi",           lxData->IsEpi());
+    writer.addBooleanElement("isFMRI",          lxData->IsFunctionalMri());
+    writer.addBooleanElement("isEpiBottomUp",   lxData->IsBottomUpEpi());
+    writer.addBooleanElement("isEpiTopDown",    lxData->IsTopDownEpi());
+    writer.addBooleanElement("isEpiRefScan",    lxData->IsEpiRefScan());
+    writer.addBooleanElement("isEpiRefless",    lxData->IsReflessEPI());
+    writer.addBooleanElement("isEpiRampsampled",processingControl->Value<bool>("RampSamplingEnabled"));
+    writer.addBooleanElement("isEpiDiffusion",  lxData->IsDiffusionEpi());
+    writer.addBooleanElement("isEpiMultiPhase", lxData->IsMultiPhaseEpi());
+    writer.addBooleanElement("isCine",          lxData->IsCine());
+    writer.addBooleanElement("isPropeller",     lxData->IsPropeller());
+    writer.addBooleanElement("isRadial3D",      lxData->IsRadial3D());
+    writer.addBooleanElement("isSpiral",        lxData->IsSpiral());
+
     writer.formatElement("SliceCount", "%d", processingControl->Value<int>("NumSlices"));
     writer.formatElement("EchoCount", "%d", processingControl->Value<int>("NumEchoes"));
     writer.formatElement("ChannelCount", "%d", processingControl->Value<int>("NumChannels"));
@@ -373,21 +390,23 @@ static std::string ge_header_to_xml(GERecon::Legacy::LxDownloadDataPointer lxDat
     writer.formatElement("Number", "%d", lxData->SeriesNumber());
     writer.formatElement("UID", "%s", seriesModule->UID().c_str());
     writer.formatElement("Description", "%s", seriesModule->SeriesDescription().c_str());
-    //writer.formatElement("Modality", "%s", seriesModule->Modality());
+    // writer.formatElement("Modality", "%s", seriesModule->Modality());
     writer.formatElement("Laterality", "%s", seriesModule->Laterality().c_str());
     writer.formatElement("Date", "%s", seriesModule->Date().c_str());
     writer.formatElement("Time", "%s", seriesModule->Time().c_str());
     writer.formatElement("ProtocolName", "%s", seriesModule->ProtocolName().c_str());
     writer.formatElement("OperatorName", "%s", seriesModule->OperatorName().c_str());
     writer.formatElement("PpsDescription", "%s", seriesModule->PpsDescription().c_str());
-    //writer.formatElement("PatientEntry", "%s", seriesModule->Entry());
-    //writer.formatElement("PatientOrientation", "%s", seriesModule->Orientation());
+    // writer.formatElement("PatientEntry", "%s", seriesModule->Entry());
+    // writer.formatElement("PatientOrientation", "%s", seriesModule->Orientation());
     writer.endElement();
 
     GEDicom::StudyPointer study = series->Study();
     GEDicom::StudyModulePointer studyModule = study->GeneralModule();
     writer.startElement("Study");
     writer.formatElement("Number", "%d", studyModule->StudyNumber());
+    // std::cerr << "********* Exam  number is: " << lxData->ExamNumber() << " *********" << std::endl;
+    // writer.formatElement("Number", "%d", lxData->ExamNumber()); // seems to be lxData equivalent
     writer.formatElement("UID", "%s", studyModule->UID().c_str());
     writer.formatElement("Description", "%s", studyModule->StudyDescription().c_str());
     writer.formatElement("Date", "%s", studyModule->Date().c_str());
@@ -426,11 +445,7 @@ static std::string ge_header_to_xml(GERecon::Legacy::LxDownloadDataPointer lxDat
     writer.formatElement("AcquiredXRes", "%d", processingControl->Value<int>("AcquiredXRes"));
     writer.formatElement("AcquiredYRes", "%d", processingControl->Value<int>("AcquiredYRes"));
     writer.formatElement("AcquiredZRes", "%d", processingControl->Value<int>("AcquiredZRes"));
-    writer.addBooleanElement("Is3DAcquisition", processingControl->Value<bool>("Is3DAcquisition"));
 
-    writer.formatElement("NumBaselineViews", "%d", processingControl->Value<int>("NumBaselineViews"));
-    writer.formatElement("NumVolumes", "%d", processingControl->Value<int>("NumVolumes"));
-    writer.formatElement("NumEchoes", "%d", processingControl->Value<int>("NumEchoes"));
     writer.addBooleanElement("EvenEchoFrequencyFlip", processingControl->Value<bool>("EvenEchoFrequencyFlip"));
     writer.addBooleanElement("OddEchoFrequencyFlip", processingControl->Value<bool>("OddEchoFrequencyFlip"));
     writer.addBooleanElement("EvenEchoPhaseFlip", processingControl->Value<bool>("EvenEchoPhaseFlip"));
@@ -439,6 +454,15 @@ static std::string ge_header_to_xml(GERecon::Legacy::LxDownloadDataPointer lxDat
     writer.addBooleanElement("HalfNex", processingControl->Value<bool>("HalfNex"));
     writer.addBooleanElement("NoFrequencyWrapData", processingControl->Value<bool>("NoFrequencyWrapData"));
     writer.addBooleanElement("NoPhaseWrapData", processingControl->Value<bool>("NoPhaseWrapData"));
+
+    writer.formatElement("sequenceNumber",  "%d", lxData->SequenceNumber());
+    writer.formatElement("seriesPulseSeq",  "%d", lxData->SeriesPulseSequence());
+    writer.formatElement("scanType",        "%s", lxData->ScanType().c_str());
+    writer.formatElement("seriesDscrption", "%s", lxData->SeriesDescription().c_str());
+
+    writer.formatElement("NumBaselineViews", "%d", processingControl->Value<int>("NumBaselineViews"));
+    writer.formatElement("NumVolumes", "%d", processingControl->Value<int>("NumVolumes"));
+    writer.formatElement("NumEchoes", "%d", processingControl->Value<int>("NumEchoes"));
     writer.formatElement("NumAcquisitions", "%d", processingControl->Value<int>("NumAcquisitions"));
     writer.formatElement("DataSampleSize", "%d", processingControl->Value<int>("DataSampleSize")); // in bytes
                                                                                                    // nacq_points = ncoils * frame_size
@@ -521,6 +545,29 @@ static std::string ge_header_to_xml(GERecon::Legacy::LxDownloadDataPointer lxDat
 
     writer.endElement();
 
+    writer.startElement("UserVariables");
+    writer.formatElement("rdb_hdr_user0",  "%d", processingControl->Value<int>("UserValue0"));
+    writer.formatElement("rdb_hdr_user1",  "%d", processingControl->Value<int>("UserValue1"));
+    writer.formatElement("rdb_hdr_user2",  "%d", processingControl->Value<int>("UserValue2"));
+    writer.formatElement("rdb_hdr_user3",  "%d", processingControl->Value<int>("UserValue3"));
+    writer.formatElement("rdb_hdr_user4",  "%d", processingControl->Value<int>("UserValue4"));
+    writer.formatElement("rdb_hdr_user5",  "%d", processingControl->Value<int>("UserValue5"));
+    writer.formatElement("rdb_hdr_user6",  "%d", processingControl->Value<int>("UserValue6"));
+    writer.formatElement("rdb_hdr_user7",  "%d", processingControl->Value<int>("UserValue7"));
+    writer.formatElement("rdb_hdr_user8",  "%d", processingControl->Value<int>("UserValue8"));
+    writer.formatElement("rdb_hdr_user9",  "%d", processingControl->Value<int>("UserValue9"));
+    writer.formatElement("rdb_hdr_user10", "%d", processingControl->Value<int>("UserValue10"));
+    writer.formatElement("rdb_hdr_user11", "%d", processingControl->Value<int>("UserValue11"));
+    writer.formatElement("rdb_hdr_user12", "%d", processingControl->Value<int>("UserValue12"));
+    writer.formatElement("rdb_hdr_user13", "%d", processingControl->Value<int>("UserValue13"));
+    writer.formatElement("rdb_hdr_user14", "%d", processingControl->Value<int>("UserValue14"));
+    writer.formatElement("rdb_hdr_user15", "%d", processingControl->Value<int>("UserValue15"));
+    writer.formatElement("rdb_hdr_user16", "%d", processingControl->Value<int>("UserValue16"));
+    writer.formatElement("rdb_hdr_user17", "%d", processingControl->Value<int>("UserValue17"));
+    writer.formatElement("rdb_hdr_user18", "%d", processingControl->Value<int>("UserValue18"));
+    writer.formatElement("rdb_hdr_user19", "%d", processingControl->Value<int>("UserValue19"));
+    writer.endElement();
+
     // Old fields from headers:
 
     // TODO: scan_type field
@@ -558,6 +605,8 @@ static std::string ge_header_to_xml(GERecon::Legacy::LxDownloadDataPointer lxDat
     // TODO: rdb_hdr_user fields
 
     writer.endDocument();
+
+    // DEBUG: std::cerr << "XML stream from GE is: " << writer.getXML().c_str() << std::endl;
 
     return writer.getXML();
 }

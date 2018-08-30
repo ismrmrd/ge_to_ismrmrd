@@ -43,7 +43,7 @@ find_path(GADGETRON_HOME include/gadgetron/Gadget.h
     HINTS $ENV{GADGETRON_HOME} /usr/local/gadgetron /usr/gadgetron)
 mark_as_advanced(GADGETRON_HOME)
 
-install ( FILES         gtConfigs/gtReconExampleGE2D.xml
+install ( DIRECTORY     gtConfigs/
           DESTINATION   ${GADGETRON_HOME}/share/gadgetron/config
           COMPONENT     main )
 
