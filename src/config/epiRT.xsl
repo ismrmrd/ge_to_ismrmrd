@@ -86,7 +86,7 @@
                     </userParameterLong>
                     <!-- Switch depending on ramp sampling -->
                     <xsl:choose>
-                      <xsl:when test="Header/isEpiRampsampled = true">
+                      <xsl:when test="(Header/isEpiRampsampled)='true'">
                         <!-- Ramp sampling is ON -->
                         <userParameterLong>
                            <name>rampUpTime</name>
