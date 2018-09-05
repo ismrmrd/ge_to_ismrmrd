@@ -112,24 +112,16 @@
                               <xsl:value-of select="Header/UserVariables/rdb_hdr_user10"/>
                            </value>
                         </userParameterLong>
-                        <userParameterLong>
-                           <name>numSamples</name>
-                           <value>
-                              <xsl:value-of select="Header/TransformXRes"/>
-                           </value>
-                        </userParameterLong>
                       </xsl:when>
-                      <xsl:otherwise>
-                        <!-- Ramp sampling is OFF -->
-                        <userParameterLong>
-                           <name>numSamples</name>
-                           <value>
-                              <xsl:value-of select="Header/TransformXRes"/>
-                           </value>
-                        </userParameterLong>
-                      </xsl:otherwise>
                     </xsl:choose>
-
+                    <!-- AcquiredXRes should hold correct number of acquired -->
+                    <!-- samples regard of value of isEpiRampsampled.        -->
+                    <userParameterLong>
+                       <name>numSamples</name>
+                       <value>
+                          <xsl:value-of select="Header/AcquiredXRes"/>
+                       </value>
+                    </userParameterLong>
                     <userParameterDouble>
                         <name>dwellTime</name>
                         <value>
