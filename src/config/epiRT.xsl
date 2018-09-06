@@ -124,10 +124,8 @@
                     </userParameterLong>
                     <userParameterDouble>
                         <name>dwellTime</name>
-                        <value>
-                            <!-- xsl:value-of select="Header/sampleTime div 1000.0"/ -->
-                            <value>2</value>
-                        </value>
+                        <!-- xsl:value-of select="Header/sampleTime div 1000.0"/ -->
+                        <value>2.0</value>
                     </userParameterDouble>
          </trajectoryDescription>
          <encodedSpace>

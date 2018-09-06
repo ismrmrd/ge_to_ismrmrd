@@ -167,7 +167,7 @@ std::vector<ISMRMRD::Acquisition> NIHepiConverter::getAcquisitions(GERecon::Scan
             if (view == totalViews - 1)
                acq.setFlag(ISMRMRD::ISMRMRD_ACQ_LAST_IN_SLICE);
 
-	    if (view < topViews || view > topViews + yAcq) {
+	    if (view < topViews || view >= topViews + yAcq) {
 	       // This is a reference view
                acq.setFlag(ISMRMRD::ISMRMRD_ACQ_IS_PHASECORR_DATA);
 	       idx.kspace_encode_step_1 = yAcq/2;
