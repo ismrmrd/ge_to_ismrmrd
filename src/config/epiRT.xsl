@@ -132,7 +132,7 @@
          </trajectoryDescription>
          <encodedSpace>
             <matrixSize>
-               <x><xsl:value-of select="Header/AcquiredXRes"/></x>
+               <x><xsl:value-of select="Header/TransformXRes"/></x>
                <y><xsl:value-of select="Header/AcquiredYRes"/></y>
                <xsl:choose>
                   <xsl:when test="(Header/Is3DAcquisition)='true'">
