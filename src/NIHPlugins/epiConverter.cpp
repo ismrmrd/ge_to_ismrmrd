@@ -32,19 +32,26 @@ std::vector<ISMRMRD::Acquisition> NIHepiConverter::getAcquisitions(GERecon::Scan
    // GERecon::Path::ScannerConfig(scanArchivePath.parent_path());
    scanArchivePtr->LoadSavedFiles();
 
-   int const   packetQuantity = archiveStoragePointer->AvailableControlCount();
+   int const    packetQuantity = archiveStoragePointer->AvailableControlCount();
 
-   int                acqType = 0;
-   unsigned int       nEchoes = processingControl->Value<int>("NumEchoes");
-   unsigned int     nChannels = processingControl->Value<int>("NumChannels");
-   unsigned int     numSlices = processingControl->Value<int>("NumSlices");
-   size_t          frame_size = processingControl->Value<int>("AcquiredXRes");
-   int const         topViews = processingControl->Value<int>("ExtraFramesTop");
-   int const             yAcq = processingControl->Value<int>("AcquiredYRes");
-   int const      bottomViews = processingControl->Value<int>("ExtraFramesBottom");
+   int                 acqType = 0;
+   unsigned int        nEchoes = processingControl->Value<int>("NumEchoes");
+   unsigned int      nChannels = processingControl->Value<int>("NumChannels");
+   unsigned int      numSlices = processingControl->Value<int>("NumSlices");
+   size_t           frame_size = processingControl->Value<int>("AcquiredXRes");
+   int const          topViews = processingControl->Value<int>("ExtraFramesTop");
+   int const              yAcq = processingControl->Value<int>("AcquiredYRes");
+   int const       bottomViews = processingControl->Value<int>("ExtraFramesBottom");
    // unsigned int     nRefViews = processingControl->Value<int>("NumRefViews"); // Variable not found at run time
-   unsigned int     nRefViews = topViews + bottomViews;
+   unsigned int      nRefViews = topViews + bottomViews;
+
+   bool isEpiRefScanIntegrated = processingControl->Value<bool>("IntegratedReferenceScan");
+   bool     isMultiBandEnabled = processingControl->Value<bool>("MultibandEnabled");
  
+   int                nVolumes = processingControl->Value<int>("NumAcquisitions");
+   int      nAcqsPerRepetition = processingControl->Value<int>("NumAcquisitionsPerRepetition");
+   // float         acqSampleTime = processingControl->Value<float>("A2DSampleTime"); // does not exist in the Epi::LxControlSource object
+
    const RowFlipParametersPointer rowFlipper = boost::make_shared<RowFlipParameters>(yAcq + nRefViews);
    RowFlipPlugin rowFlipPlugin(rowFlipper, *processingControl);
 
@@ -72,33 +79,6 @@ std::vector<ISMRMRD::Acquisition> NIHepiConverter::getAcquisitions(GERecon::Scan
          acqType = GERecon::Acquisition::ImageFrame;
 	 auto pktData = thisPacket->Data();
 
-#ifdef NIH_DEBUG
-         if (nRefViews > 0)
-         {
-            if (topViews > 0)
-            {
-               kRefDataRange   = Range(fromStart, topViews - 1);
-               viewStart       = topViews;
-               viewEnd         = topViews + yAcq - 1;
-            }
-            else if (bottomViews > 0)
-            {
-               kRefDataRange   = Range(yAcq, bottomViews + yAcq - 1);
-               viewStart       = 0;
-               viewEnd         = yAcq - 1;
-            }
-            else
-               kRefDataRange = Range();
-
-            kImgDataRange = Range(viewStart, viewEnd);
-         }
-
-         // std::cout << "Start of ref range is " << kRefDataRange.first() << std::endl;
-         // std::cout << "End   of ref range is " << kRefDataRange.last()  << std::endl;
-         // std::cout << "Start of img range is " << kImgDataRange.first() << std::endl;
-         // std::cout << "End   of img range is " << kImgDataRange.last()  << std::endl;
-#endif
-
 	 // Transpose the pktData - swapping channel (2) and phase (1) dimensions. This does not move data around in
          // memory - this just manipulates the strides.
 	 pktData.transposeSelf( 0, 2, 1 );
@@ -108,7 +88,6 @@ std::vector<ISMRMRD::Acquisition> NIHepiConverter::getAcquisitions(GERecon::Scan
 	    pktData.reverseSelf(1);
 	    // std::cout << "Data was FLIPPED alonig y-axis using reverseSelf()\n";
 	 }
-	 // else std::cout << "Data not flipped\n";
 
 	 // Copy (and sort) the packet data into a new array, kdata.
 	 ComplexFloatCube kData( pktData.shape() );
@@ -123,7 +102,6 @@ std::vector<ISMRMRD::Acquisition> NIHepiConverter::getAcquisitions(GERecon::Scan
 	   ComplexFloatMatrix tempData = kData(Range::all(), Range::all(), channelID);
 	   rowFlipPlugin.ApplyImageDataRowFlip(tempData);
          }
-	 // std::cout << "ApplyImageDataRowFlip done\n";
 
          // Copy data out of ScanArchive into ISMRMRD object
 	 int totalViews = topViews + yAcq + bottomViews;
