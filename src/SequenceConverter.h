@@ -32,6 +32,26 @@
 #include <Dicom/EquipmentModule.h>
 #include <Dicom/ImagePlaneModule.h>
 
+// Trying to see if putting sequence-specific headers here will allow creation
+// of sequence-specific control objects in the GERawConverter module, which
+// should allow that module to put information about sequence specific objects
+// into base XML header stream.
+
+#include <Orchestra/Common/ReconPaths.h>
+#include <Orchestra/Epi/LxControlSource.h>
+#include <Orchestra/Epi/RowFlipParameters.h>
+#include <Orchestra/Epi/RowFlipPlugin.h>
+#include <Orchestra/Epi/PhaseCorrectionReferenceFile.h>
+#include <Orchestra/Epi/SelfNavDynamicPhaseCorrectionPlugin.h>
+#include <Orchestra/Epi/Diffusion/DynamicPhaseCorrectionManager.h>
+
+using namespace MDArray;
+using namespace GERecon;
+using namespace GERecon::Epi;
+
+// end of EPI-related "includes" ...
+
+
 
 // ISMRMRD
 #include "ismrmrd/ismrmrd.h"

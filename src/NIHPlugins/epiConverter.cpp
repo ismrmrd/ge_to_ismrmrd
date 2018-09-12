@@ -48,9 +48,10 @@ std::vector<ISMRMRD::Acquisition> NIHepiConverter::getAcquisitions(GERecon::Scan
    bool isEpiRefScanIntegrated = processingControl->Value<bool>("IntegratedReferenceScan");
    bool     isMultiBandEnabled = processingControl->Value<bool>("MultibandEnabled");
  
-   int                nVolumes = processingControl->Value<int>("NumAcquisitions");
-   int      nAcqsPerRepetition = processingControl->Value<int>("NumAcquisitionsPerRepetition");
+   // int                nVolumes = processingControl->Value<int>("NumAcquisitions");
+   // int      nAcqsPerRepetition = processingControl->Value<int>("NumAcquisitionsPerRepetition");
    // float         acqSampleTime = processingControl->Value<float>("A2DSampleTime"); // does not exist in the Epi::LxControlSource object
+   int                nVolumes = packetQuantity / numSlices ; // Since each packet should hold 1 slice worth of acquistions, for EPI
 
    const RowFlipParametersPointer rowFlipper = boost::make_shared<RowFlipParameters>(yAcq + nRefViews);
    RowFlipPlugin rowFlipPlugin(rowFlipper, *processingControl);
@@ -103,6 +104,9 @@ std::vector<ISMRMRD::Acquisition> NIHepiConverter::getAcquisitions(GERecon::Scan
 	   rowFlipPlugin.ApplyImageDataRowFlip(tempData);
          }
 
+         // Unchop RF-chopped data
+         kData(Range::all(), Range(fromStart, toEnd, 2), Range::all()) *= -1.0f;
+
          // Copy data out of ScanArchive into ISMRMRD object
 	 int totalViews = topViews + yAcq + bottomViews;
 
@@ -123,6 +127,7 @@ std::vector<ISMRMRD::Acquisition> NIHepiConverter::getAcquisitions(GERecon::Scan
             get_view_idx(processingControl, 0, idx);
             idx.slice                  = sliceID;
             idx.contrast               = 1;          // JAD: Should this be 0?
+            idx.repetition             = (int) (packetCount / numSlices);
 
             // acq.measurement_uid() = pfile->RunNumber();
             acq.scan_counter() = dataIndex;

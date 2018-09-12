@@ -385,18 +385,8 @@ static std::string ge_header_to_xml(GERecon::Legacy::LxDownloadDataPointer lxDat
     // writer.addBooleanElement("is3DASL",            processingControl->Value<bool>("Is3DASL"));
 
     writer.formatElement("SliceCount", "%d",       processingControl->Value<int>("NumSlices"));
-    /* 
-    if (lxData->IsEpi())
-       if (processingControl->Value<bool>("MultibandEnabled"))
-       {
-          writer.addBooleanElement("isEpiRefScanIntegrated",   processingControl->Value<bool>("IntegratedReferenceScan"));
-          writer.formatElement("nMultiBandSlices", "%d", processingControl->ValueStrict<int>("MultibandNumAcquiredSlices"));
-       }
-    */
     writer.formatElement("ChannelCount", "%d",     processingControl->Value<int>("NumChannels"));
-    writer.formatElement("RepetitionCount", "%d",  1 /* pfile->RepetitionCount() */); // identify variable for this
-    // writer.formatElement("NumberOfShots", "%d",    processingControl->Value<unsigned int>("NumberOfShots"));
-    // writer.formatElement("NumAcqsPerRep", "%d",    processingControl->Value<int>("NumAcquisitionsPerRepetition"));
+    // writer.formatElement("RepetitionCount", "%d",  1 /* pfile->RepetitionCount() */); // identify variable for this
 
     GERecon::Legacy::DicomSeries legacySeries(lxData);
     GEDicom::SeriesPointer series = legacySeries.Series();
@@ -420,9 +410,9 @@ static std::string ge_header_to_xml(GERecon::Legacy::LxDownloadDataPointer lxDat
     GEDicom::StudyPointer study = series->Study();
     GEDicom::StudyModulePointer studyModule = study->GeneralModule();
     writer.startElement("Study");
-    writer.formatElement("Number", "%d",           studyModule->StudyNumber());
-    // std::cerr << "********* Exam  number is: " << lxData->ExamNumber() << " *********" << std::endl;
-    // writer.formatElement("Number", "%d", lxData->ExamNumber()); // seems to be lxData equivalent
+    // writer.formatElement("Number", "%d",           studyModule->StudyNumber());
+    // writer.formatElement("Number", "%d",           lxData->ExamNumber()); // seems to be lxData equivalent
+    writer.formatElement("Number", "%u",           processingControl->Value<int>("ExamNumber"));
     writer.formatElement("UID", "%s",              studyModule->UID().c_str());
     writer.formatElement("Description", "%s",      studyModule->StudyDescription().c_str());
     writer.formatElement("Date", "%s",             studyModule->Date().c_str());
@@ -461,10 +451,6 @@ static std::string ge_header_to_xml(GERecon::Legacy::LxDownloadDataPointer lxDat
     writer.formatElement("AcquiredXRes", "%d",     processingControl->Value<int>("AcquiredXRes"));
     writer.formatElement("AcquiredYRes", "%d",     processingControl->Value<int>("AcquiredYRes"));
     writer.formatElement("AcquiredZRes", "%d",     processingControl->Value<int>("AcquiredZRes"));
-    // writer.formatElement("ExtraFramesTop", "%d",   processingControl->Value<int>("ExtraFramesTop"));
-    // writer.formatElement("ExtraFramesBottom", "%d",processingControl->Value<int>("ExtraFramesBottom"));
-    // writer.formatElement("SpiralNumArms", "%d",    processingControl->Value<int>("NumArms"));
-    // writer.formatElement("SpiralNumPtsPerArm", "%d",  processingControl->Value<int>("NumPointsPerArm"));
 
     writer.addBooleanElement("EvenEchoFrequencyFlip", processingControl->Value<bool>("EvenEchoFrequencyFlip"));
     writer.addBooleanElement("OddEchoFrequencyFlip",  processingControl->Value<bool>("OddEchoFrequencyFlip"));
@@ -484,27 +470,21 @@ static std::string ge_header_to_xml(GERecon::Legacy::LxDownloadDataPointer lxDat
     writer.formatElement("seriesDscrption", "%s",  lxData->SeriesDescription().c_str());
 
     writer.formatElement("NumBaselineViews", "%d", processingControl->Value<int>("NumBaselineViews"));
-    // writer.formatElement("NumRefViews", "%d",      processingControl->Value<int>("NumRefViews"));
     writer.formatElement("NumVolumes", "%d",       processingControl->Value<int>("NumVolumes"));
     writer.formatElement("NumEchoes", "%d",        processingControl->Value<int>("NumEchoes"));
     writer.formatElement("NumAcquisitions", "%d",  processingControl->Value<int>("NumAcquisitions"));
     writer.formatElement("DataSampleSize", "%d",   processingControl->Value<int>("DataSampleSize")); // in bytes
                                                                                                      // nacq_points = ncoils * frame_size
-    // writer.formatElement("DataSampleTime", "%f",   processingControl->Value<float>("A2DSampleTime"));// in usec // found in an example - but seems to be specific to that example
-    // std::string sampleType      = GERecon::DataSampleTypeAsString(static_cast<GERecon::DataSampleType>(processingControl->Value<float>("DataSampleType")));
-    // writer.formatElement("DataSampleType", "%s",   sampleType.c_str()); 
 
-    std::string patientPosition = GERecon::PatientPositionAsString(static_cast<GERecon::PatientPosition>(processingControl->Value<int>("PatientPosition")));
-    writer.formatElement("PatientPosition", "%s",  patientPosition.c_str());
-    writer.formatElement("PatientEntry", "%d",     processingControl->Value<int>("PatientEntry")); // no PatientEntryAsString function in Orchestra
+    // std::string patientPosition = GERecon::PatientPositionAsString(static_cast<GERecon::PatientPosition>(processingControl->Value<int>("PatientPosition")));
+    // writer.formatElement("PatientPositionStr", "%s",  patientPosition.c_str());
+    writer.formatElement("PatientPosition", "%d",  static_cast<GERecon::PatientPosition>(processingControl->Value<int>("PatientPosition")));
+    writer.formatElement("PatientEntry", "%d",     processingControl->Value<int>("PatientEntry"));
 
     writer.formatElement("ScanCenter", "%f",       processingControl->Value<float>("ScanCenter"));
     writer.formatElement("Landmark", "%f",         processingControl->Value<float>("Landmark"));
-    writer.formatElement("ExamNumber", "%u",       processingControl->Value<int>("ExamNumber"));
     writer.formatElement("CoilConfigUID", "%u",    processingControl->Value<int>("CoilConfigUID"));
     writer.formatElement("RawPassSize", "%llu",    processingControl->Value<int>("RawPassSize"));
-
-    // see AcquisitionParameters documentation for more boolean parameters
 
     // ReconstructionParameters
     writer.addBooleanElement("CreateMagnitudeImages", processingControl->Value<bool>("CreateMagnitudeImages"));
@@ -518,17 +498,9 @@ static std::string ge_header_to_xml(GERecon::Legacy::LxDownloadDataPointer lxDat
     writer.addBooleanElement("ChopY",              processingControl->Value<bool>("ChopY"));
     writer.addBooleanElement("ChopZ",              processingControl->Value<bool>("ChopZ"));
 
-    // TODO: map SliceOrder to a string
-    // std::string sliceOrder = GERecon::PatientPositionAsString(static_cast<GERecon::Control::ReconstructionParameters>(processingControl->Value<int>("PatientPosition")));
-    // writer.formatElement("SliceOrder", "%s",       processingControl->Value<int>("SliceOrder"));
-
-    // Image Parameters
-    // writer.formatElement("ImageXRes", "%d",        processingControl->Value<int>("ImageXRes"));
-    // writer.formatElement("ImageYRes", "%d",        processingControl->Value<int>("ImageYRes"));
-
-    GERecon::PrepData prepData(lxData);
-    GERecon::ArchiveHeader archiveHeader("ScanArchive", prepData);
-    DEBUG: archiveHeader.Print(std::cout); // Does not seem to current work as expected
+    // GERecon::PrepData prepData(lxData);
+    // GERecon::ArchiveHeader archiveHeader("ScanArchive", prepData);
+    // DEBUG: archiveHeader.Print(std::cout); // Does not seem to currently work as expected
 
     const GERecon::SliceInfoTable sliceTable = processingControl->ValueStrict<GERecon::SliceInfoTable>("SliceTable");
 
@@ -553,6 +525,13 @@ static std::string ge_header_to_xml(GERecon::Legacy::LxDownloadDataPointer lxDat
     writer.formatElement("SliceSpacing", "%s",     imageModule->SliceSpacing().c_str());
     writer.formatElement("FlipAngle", "%s",        imageModule->FlipAngle().c_str());
     writer.formatElement("EchoTrainLength", "%s",  imageModule->EchoTrainLength().c_str());
+    // TODO: map SliceOrder to a string
+    // std::string sliceOrder = GERecon::SliceOrderAsString(processingControl->ReconstructionParameters::SliceOrder());
+    // writer.formatElement("SliceOrder", "%s",       sliceOrder.c_str());
+
+    // Image Parameters
+    writer.formatElement("ImageXRes", "%d",        processingControl->Value<int>("ImageXRes"));
+    writer.formatElement("ImageYRes", "%d",        processingControl->Value<int>("ImageYRes"));
 
     auto imageModuleBase = dicomImage.ImageModuleBase();
     writer.formatElement("AcquisitionDate", "%s",  imageModuleBase->AcquisitionDate().c_str());
@@ -596,28 +575,35 @@ static std::string ge_header_to_xml(GERecon::Legacy::LxDownloadDataPointer lxDat
     writer.formatElement("rdb_hdr_user19", "%d",   processingControl->Value<int>("UserValue19"));
     writer.endElement();
 
+    if (lxData->IsEpi())
+    {
+        // Create EPI processing control object, so all relevant varaibles within that object are
+        // avaliable and accessible.
+
+        boost::shared_ptr<GERecon::Epi::LxControlSource> const controlSource = boost::make_shared<GERecon::Epi::LxControlSource>(lxData);
+        GERecon::Control::ProcessingControlPointer               procCtrlEPI = controlSource->CreateOrchestraProcessingControl();
+
+        writer.startElement("epiParameters");
+          writer.addBooleanElement("isEpiRefScanIntegrated",   procCtrlEPI->Value<bool>("IntegratedReferenceScan"));
+          writer.addBooleanElement("MultibandEnabled",         procCtrlEPI->ValueStrict<bool>("MultibandEnabled"));
+          writer.formatElement("ExtraFramesTop", "%d",      procCtrlEPI->Value<int>("ExtraFramesTop"));
+          writer.formatElement("ExtraFramesBottom", "%d",   procCtrlEPI->Value<int>("ExtraFramesBottom"));
+          // writer.formatElement("NumRefViews", "%d",         procCtrlEPI->Value<int>("NumRefViews")); // still not found at run time
+          writer.formatElement("NumRefViews", "%d",        (procCtrlEPI->Value<int>("ExtraFramesTop") + procCtrlEPI->Value<int>("ExtraFramesBottom")));
+          // writer.formatElement("nMultiBandSlices", "%d",    procCtrlEPI->ValueStrict<int>("MultibandNumAcquiredSlices"));
+          writer.formatElement("NumberOfShots", "%d",       procCtrlEPI->Value<unsigned int>("NumberOfShots"));
+          writer.formatElement("NumAcqsPerRep", "%d",       procCtrlEPI->Value<int>("NumAcquisitionsPerRepetition"));
+          // writer.formatElement("DataSampleTime", "%f",      processingControl->Value<float>("A2DSampleTime")); // in usec. Found in an example - but seems to be specific to that example
+       writer.endElement();
+    }
+
     // Old fields from headers:
 
-    // TODO: scan_type field
-
-    // TODO: data_collect_type field
-    // TODO: data_collect_type1 field
-    // TODO: data_format field
-    // TODO: dacq_ctrl field
-    // TODO: recon_type field
-
     // TODO: patient_pos field
-
-    // TODO: psd_name field
 
     // TODO: dfov field
     // TODO: dfov_rect field
 
-    // TODO: te2 field
-    // TODO: rdb_te field
-    // TODO: rdb_te2 field
-    // TODO: ti field
-    // std::cout << "InversionTime is " << imageModule->InversionTime().c_str() << std::endl;
     // TODO: trigger_time field
 
     // TODO: measurement_uid field
@@ -633,6 +619,7 @@ static std::string ge_header_to_xml(GERecon::Legacy::LxDownloadDataPointer lxDat
     writer.endDocument();
 
     // DEBUG: std::cerr << "XML stream from GE is: " << writer.getXML().c_str() << std::endl;
+    std::cerr << "XML stream from GE is: " << writer.getXML().c_str() << std::endl;
 
     return writer.getXML();
 }
