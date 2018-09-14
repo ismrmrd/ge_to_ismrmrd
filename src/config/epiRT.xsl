@@ -81,7 +81,7 @@
                     <userParameterLong>
                         <name>numberOfNavigators</name>
                         <value>
-                           <xsl:value-of select="Header/UserVariables/rdb_hdr_user14"/>
+                           <xsl:value-of select="Header/epiParameters/NumRefViews"/>
                         </value>
                     </userParameterLong>
                     <!-- Switch depending on ramp sampling -->
