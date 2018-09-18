@@ -588,11 +588,11 @@ static std::string ge_header_to_xml(GERecon::Legacy::LxDownloadDataPointer lxDat
           writer.addBooleanElement("MultibandEnabled",         procCtrlEPI->ValueStrict<bool>("MultibandEnabled"));
           writer.formatElement("ExtraFramesTop", "%d",      procCtrlEPI->Value<int>("ExtraFramesTop"));
           writer.formatElement("ExtraFramesBottom", "%d",   procCtrlEPI->Value<int>("ExtraFramesBottom"));
-          // writer.formatElement("NumRefViews", "%d",         procCtrlEPI->Value<int>("NumRefViews")); // still not found at run time
+          // writer.formatElement("NumRefViews", "%d",         procCtrlEPI->Value<int>("NumRefViews")); // not found at run time up to Orchestra 1.7.1
           writer.formatElement("NumRefViews", "%d",        (procCtrlEPI->Value<int>("ExtraFramesTop") + procCtrlEPI->Value<int>("ExtraFramesBottom")));
           // writer.formatElement("nMultiBandSlices", "%d",    procCtrlEPI->ValueStrict<int>("MultibandNumAcquiredSlices"));
-          writer.formatElement("NumberOfShots", "%d",       procCtrlEPI->Value<unsigned int>("NumberOfShots"));
-          writer.formatElement("NumAcqsPerRep", "%d",       procCtrlEPI->Value<int>("NumAcquisitionsPerRepetition"));
+          // writer.formatElement("NumberOfShots", "%d",       procCtrlEPI->Value<unsigned int>("NumberOfShots"));
+          // writer.formatElement("NumAcqsPerRep", "%d",       procCtrlEPI->Value<int>("NumAcquisitionsPerRepetition"));
           // writer.formatElement("DataSampleTime", "%f",      processingControl->Value<float>("A2DSampleTime")); // in usec. Found in an example - but seems to be specific to that example
        writer.endElement();
     }
@@ -619,7 +619,6 @@ static std::string ge_header_to_xml(GERecon::Legacy::LxDownloadDataPointer lxDat
     writer.endDocument();
 
     // DEBUG: std::cerr << "XML stream from GE is: " << writer.getXML().c_str() << std::endl;
-    std::cerr << "XML stream from GE is: " << writer.getXML().c_str() << std::endl;
 
     return writer.getXML();
 }

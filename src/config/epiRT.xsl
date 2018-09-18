@@ -88,6 +88,9 @@
                     <xsl:choose>
                       <xsl:when test="(Header/isEpiRampsampled)='true'">
                         <!-- Ramp sampling is ON -->
+                        <!-- Next set of values, taken from "rdb_hdr_user" variables, are -->
+                        <!-- from customizations to NIH's EPI sequence, that store values -->
+                        <!-- needed for Gadgetron-based reconstruction in these vairables -->
                         <userParameterLong>
                            <name>rampUpTime</name>
                            <value>
