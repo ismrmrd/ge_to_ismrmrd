@@ -387,6 +387,7 @@ static std::string ge_header_to_xml(GERecon::Legacy::LxDownloadDataPointer lxDat
     writer.formatElement("SliceCount", "%d",       processingControl->Value<int>("NumSlices"));
     writer.formatElement("ChannelCount", "%d",     processingControl->Value<int>("NumChannels"));
     // writer.formatElement("RepetitionCount", "%d",  1 /* pfile->RepetitionCount() */); // identify variable for this
+    writer.formatElement("OtherUID", "%s",         GEDicom::UID::Create(GEDicom::UID::OtherUID).c_str());
 
     GERecon::Legacy::DicomSeries legacySeries(lxData);
     GEDicom::SeriesPointer series = legacySeries.Series();
@@ -443,6 +444,7 @@ static std::string ge_header_to_xml(GERecon::Legacy::LxDownloadDataPointer lxDat
     writer.formatElement("Station", "%s",          equipmentModule->Station().c_str());
     writer.formatElement("ManufacturerModel", "%s",   equipmentModule->ManufacturerModel().c_str());
     writer.formatElement("DeviceSerialNumber", "%s",  equipmentModule->DeviceSerialNumber().c_str());
+    writer.formatElement("UID", "%s",              GEDicom::UID::Create(GEDicom::UID::Equipment).c_str());
     writer.formatElement("SoftwareVersion", "%s",  equipmentModule->SoftwareVersion().c_str());
     writer.formatElement("PpsPerformedStation", "%s", equipmentModule->PpsPerformedStation().c_str());
     writer.formatElement("PpsPerformedLocation", "%s",equipmentModule->PpsPerformedLocation().c_str());

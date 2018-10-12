@@ -31,6 +31,7 @@
 #include <Dicom/Equipment.h>
 #include <Dicom/EquipmentModule.h>
 #include <Dicom/ImagePlaneModule.h>
+#include <Dicom/UID.h>
 
 // Trying to see if putting sequence-specific headers here will allow creation
 // of sequence-specific control objects in the GERawConverter module, which
