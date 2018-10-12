@@ -74,6 +74,7 @@ std::vector<ISMRMRD::Acquisition> GenericConverter::getAcquisitions(GERecon::Leg
 
                 // Set size of this data frame to receive raw data
                 acq.resize(frame_size, nChannels, 0);
+                acq.clearAllFlags();
 
                 // Get data from P-file using KSpaceData object, and copy
                 // into ISMRMRD space.
@@ -112,7 +113,6 @@ std::vector<ISMRMRD::Acquisition> GenericConverter::getAcquisitions(GERecon::Leg
                 acq.idx() = idx;
 
                 // Fill in the rest of the header
-                acq.clearAllFlags();
                 // acq.measurement_uid() = pfile->RunNumber();
                 acq.scan_counter() = acq_num;
                 acq.acquisition_time_stamp() = time(NULL); // TODO: can we get a timestamp?
@@ -229,6 +229,7 @@ std::vector<ISMRMRD::Acquisition> GenericConverter::getAcquisitions(GERecon::Sca
 
             // Set size of this data frame to receive raw data
             acq.resize(frame_size, nChannels, 0);
+            acq.clearAllFlags();
 
             for (int channelID = 0 ; channelID < nChannels ; channelID++)
             {
@@ -255,7 +256,6 @@ std::vector<ISMRMRD::Acquisition> GenericConverter::getAcquisitions(GERecon::Sca
             acq.idx() = idx;
 
             // Fill in the rest of the header
-            acq.clearAllFlags();
             // acq.measurement_uid() = pfile->RunNumber();
             acq.scan_counter() = dataIndex;
             acq.acquisition_time_stamp() = time(NULL);
