@@ -250,7 +250,7 @@ std::vector<ISMRMRD::Acquisition> GenericConverter::getAcquisitions(GERecon::Sca
             get_view_idx(processingControl, 0, idx);
 
             idx.slice                  = sliceID;
-            idx.contrast               = 1;
+            idx.contrast               = packetContents.echoNum;
             idx.kspace_encode_step_1   = viewID - 1;
 
             acq.idx() = idx;

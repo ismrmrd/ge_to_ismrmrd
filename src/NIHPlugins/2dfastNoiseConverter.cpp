@@ -177,7 +177,7 @@ std::vector<ISMRMRD::Acquisition> NIH2dfastNoiseConverter::getAcquisitions(GERec
             acq.idx() = idx;
 
             // Fill in the rest of the header
-            acq.scan_counter() = dataIndex;
+            acq.scan_counter()         = dataIndex;
             acq.available_channels()   = nChannels;
             acq.center_sample()        = frame_size/2;
 
