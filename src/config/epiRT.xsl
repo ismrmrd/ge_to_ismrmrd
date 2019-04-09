@@ -16,30 +16,61 @@
         <patientWeight_kg><xsl:value-of select="Header/Patient/Weight"/></patientWeight_kg>
         <patientID><xsl:value-of select="Header/Patient/ID"/></patientID>
         <xsl:if test="Header/Patient/Birthdate != ''">
-            <patientBirthdate><xsl:value-of select="Header/Patient/Birthdate"/></patientBirthdate>
+          <xsl:variable name="patientDOB" select="Header/Patient/Birthdate"/>
+          <patientBirthdate><xsl:value-of select="concat(substring($patientDOB,1,4),'-',
+                                                         substring($patientDOB,5,2),'-',
+                                                         substring($patientDOB,7,2))"/></patientBirthdate>
         </xsl:if>
-        <patientGender><xsl:value-of select="Header/Patient/Gender"/></patientGender>
+        <xsl:if test="Header/Patient/Gender != ''">
+          <patientGender><xsl:value-of select="Header/Patient/Gender"/></patientGender>
+        </xsl:if>
       </subjectInformation>
 
       <studyInformation>
-        <studyDate><xsl:value-of select="Header/Study/Date"/></studyDate>
-        <studyTime><xsl:value-of select="Header/Study/Time"/></studyTime>
+        <xsl:variable name="studyDate" select="Header/Study/Date"/>
+        <studyDate><xsl:value-of select="concat(substring($studyDate,1,4),'-',
+                                                substring($studyDate,5,2),'-',
+                                                substring($studyDate,7,2))"/></studyDate>
+        <xsl:variable name="studyTime" select="Header/Study/Time"/>
+        <studyTime><xsl:value-of select="concat(substring($studyTime,1,2),':',
+                                                substring($studyTime,3,2),':',
+                                                substring($studyTime,5,2))"/></studyTime>
         <studyID><xsl:value-of select="Header/Study/Number"/></studyID>
-        <accessionNumber><xsl:value-of select="Header/Study/AccessionNumber"/></accessionNumber>
+        <xsl:choose>
+          <xsl:when test="Header/Study/AccessionNumber != ''">
+            <accessionNumber><xsl:value-of select="Header/Study/AccessionNumber"/></accessionNumber>
+          </xsl:when>
+          <xsl:otherwise>
+            <accessionNumber><xsl:value-of select="0"/></accessionNumber>
+          </xsl:otherwise>
+        </xsl:choose>
         <xsl:if test="Header/Study/ReferringPhysician != ''">
-            <referringPhysicianName><xsl:value-of select="Header/Study/ReferringPhysician"/></referringPhysicianName>
+          <referringPhysicianName><xsl:value-of select="Header/Study/ReferringPhysician"/></referringPhysicianName>
         </xsl:if>
         <xsl:if test="Header/Study/Description != ''">
-            <studyDescription><xsl:value-of select="Header/Study/Description"/></studyDescription>
+          <studyDescription><xsl:value-of select="Header/Study/Description"/></studyDescription>
         </xsl:if>
         <studyInstanceUID><xsl:value-of select="Header/Study/UID"/></studyInstanceUID>
       </studyInformation>
 
       <measurementInformation>
         <measurementID><xsl:value-of select="Header/Series/Number"/></measurementID>
-        <seriesDate><xsl:value-of select="Header/Series/Date"/></seriesDate>
-        <seriesTime><xsl:value-of select="Header/Series/Time"/></seriesTime>
-        <patientPosition><xsl:value-of select="Header/PatientPosition"/></patientPosition>
+        <xsl:variable name="seriesDate" select="Header/Series/Date"/>
+        <seriesDate><xsl:value-of select="concat(substring($seriesDate,1,4),'-',
+                                                 substring($seriesDate,5,2),'-',
+                                                 substring($seriesDate,7,2))"/></seriesDate>
+        <xsl:variable name="seriesTime" select="Header/Series/Time"/>
+        <seriesTime><xsl:value-of select="concat(substring($seriesTime,1,2),':',
+                                                 substring($seriesTime,3,2),':',
+                                                 substring($seriesTime,5,2))"/></seriesTime>
+        <xsl:choose>
+          <xsl:when test="Header/PatientPosition = '0'">
+            <patientPosition>HFP</patientPosition>
+          </xsl:when>
+          <xsl:otherwise>
+            <patientPosition>HFS</patientPosition>
+          </xsl:otherwise>
+        </xsl:choose>
         <initialSeriesNumber><xsl:value-of select="Header/Series/Number"/></initialSeriesNumber>
         <protocolName><xsl:value-of select="Header/Series/ProtocolName"/></protocolName>
         <seriesDescription><xsl:value-of select="Header/Series/Description"/></seriesDescription>
