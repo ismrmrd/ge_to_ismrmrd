@@ -76,32 +76,6 @@ std::vector<ISMRMRD::Acquisition> GenericConverter::getAcquisitions(GERecon::Leg
                 acq.resize(frame_size, nChannels, 0);
                 acq.clearAllFlags();
 
-                // Get data from P-file using KSpaceData object, and copy
-                // into ISMRMRD space.
-                for (int channelID = 0 ; channelID < nChannels ; channelID++)
-                {
-                    // VR + JAD - 2016.01.15 - looking at various schemes to stride and read in
-                    // K-space data.
-                    //
-                    // ViewData - will read in "acquisitions", including baselines, starting at
-                    //            index 0, going up to slices * echo * (view + baselines)
-                    //
-                    // KSpaceData (slice, echo, channel, phase = 0) - reads in data, assuming "GE
-                    //            native" data order in P-file, gives one slice / image worth of
-                    //            K-space data, with baseline views automagically excluded.
-                    //
-                    // KSpaceData can return different numerical data types.  Picked float to
-                    // be consistent with ISMRMRD data type.  This implementation of KSpaceData
-                    // is used for data acquired in the "native" GE order.
-
-                    auto kData = pfile->KSpaceData<float>(sliceCount, echoCount, channelID);
-
-                    for (int i = 0 ; i < frame_size ; i++)
-                    {
-                       acq.data(i, channelID) = kData(i, phaseCount);
-                    }
-                }
-
                 // Initialize the encoding counters for this acquisition.
                 ISMRMRD::EncodingCounters idx;
                 get_view_idx(processingControl, 0, idx);
@@ -162,6 +136,38 @@ std::vector<ISMRMRD::Acquisition> GenericConverter::getAcquisitions(GERecon::Leg
                 // Set last acquisition flag
                 if (idx.kspace_encode_step_1 == nPhases - 1)
                     acq.setFlag(ISMRMRD::ISMRMRD_ACQ_LAST_IN_SLICE);
+
+                // Get data from P-file using KSpaceData object, and copy
+                // into ISMRMRD space.
+                for (int channelID = 0 ; channelID < nChannels ; channelID++)
+                {
+                    // VR + JAD - 2016.01.15 - looking at various schemes to stride and read in
+                    // K-space data.
+                    //
+                    // ViewData - will read in "acquisitions", including baselines, starting at
+                    //            index 0, going up to slices * echo * (view + baselines)
+                    //
+                    // KSpaceData (slice, echo, channel, phase = 0) - reads in data, assuming "GE
+                    //            native" data order in P-file, gives one slice / image worth of
+                    //            K-space data, with baseline views automagically excluded.
+                    //
+                    // KSpaceData can return different numerical data types.  Picked float to
+                    // be consistent with ISMRMRD data type.  This implementation of KSpaceData
+                    // is used for data acquired in the "native" GE order.
+
+                    auto kData = pfile->KSpaceData<float>(sliceCount, echoCount, channelID);
+
+                    if (processingControl->Value<bool>("ChopY") == 0) {
+                       if (idx.kspace_encode_step_1 % 2 == 1) {
+                          kData *= -1.0f;
+                       }
+                    }
+
+                    for (int i = 0 ; i < frame_size ; i++)
+                    {
+                       acq.data(i, channelID) = kData(i, phaseCount);
+                    }
+                }
 
                 acq_num++;
             } // end of phaseCount loop
@@ -231,20 +237,6 @@ std::vector<ISMRMRD::Acquisition> GenericConverter::getAcquisitions(GERecon::Sca
             acq.resize(frame_size, nChannels, 0);
             acq.clearAllFlags();
 
-            for (int channelID = 0 ; channelID < nChannels ; channelID++)
-            {
-               for (int i = 0 ; i < frame_size ; i++)
-               {
-                  // The last dimension here in kData denotes the view
-                  // index in the control packet that one must stride
-                  // through to get data.  TODO - figure out if this
-                  // can be programatically determined, and if so, use
-                  // it. Will be needed for cases where multiple lines
-                  // of data are contained in a single packet.
-                  acq.data(i, channelID) = kData(i, channelID, 0);
-               }
-            }
-
             // Initialize the encoding counters for this acquisition.
             ISMRMRD::EncodingCounters idx;
             get_view_idx(processingControl, 0, idx);
@@ -280,6 +272,26 @@ std::vector<ISMRMRD::Acquisition> GenericConverter::getAcquisitions(GERecon::Sca
             // Set last acquisition flag
             if (idx.kspace_encode_step_1 == nPhases - 1)
                acq.setFlag(ISMRMRD::ISMRMRD_ACQ_LAST_IN_SLICE);
+
+            if (processingControl->Value<bool>("ChopY") == 0) {
+               if (idx.kspace_encode_step_1 % 2 == 1) {
+                  kData *= -1.0f;
+               }
+            }
+
+            for (int channelID = 0 ; channelID < nChannels ; channelID++)
+            {
+               for (int i = 0 ; i < frame_size ; i++)
+               {
+                  // The last dimension here in kData denotes the view
+                  // index in the control packet that one must stride
+                  // through to get data.  TODO - figure out if this
+                  // can be programatically determined, and if so, use
+                  // it. Will be needed for cases where multiple lines
+                  // of data are contained in a single packet.
+		  acq.data(i, channelID) = kData(i, channelID, 0);
+               }
+            }
 
             dataIndex++;
          }
