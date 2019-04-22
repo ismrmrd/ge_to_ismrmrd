@@ -19,12 +19,22 @@ foreach(libs
          Epi
          EpiDiffusion
          EpiMultiPhase
+         EpiReferenceScan
+         EpiDistortionCorrection
          Asset
+         Scic
+         Pure1
+         Pure2
          Arc
          Cartesian2D
+         Cartesian3D
+         BiasCorrection
+         Calibration3D
+         Clariview
          Gradwarp
          Legacy
          Core
+         Flex
          CalibrationCommon
          Foundation
          Acquisition
@@ -37,6 +47,13 @@ foreach(libs
          SystemServicesImplementation
          SystemServicesInterface
          System
+         MoCo
+         SpectroMultiVoxel
+         SpectroMCSI
+         SpectroMCSILegacy
+         SpectroSingleVoxel
+         FrameDownSampler
+         TestSupport
        )
 
     message("Finding library: lib${libs}.a")
