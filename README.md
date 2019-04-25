@@ -44,6 +44,23 @@ Orchestra conversion tools
     cd ../
     ```
 
+   If the situation is encountered where the system compilers and Boost version are "too far ahead"
+   of how Orchestra's support libraries (which include Boost) were compiled, then it may be necessary
+   to have the ISMRMRD build explicitly refer to Orchestra's Boost libraries, with a command like:
+
+   ```bash
+   cmake -D Boost_INCLUDE_DIR=$SDKTOP/include/recon/3p/Linux/boost_1_55_0_dev_linux64/include/ -D CMAKE_INSTALL_PREFIX=$ISMRMRD_HOME -D HDF5_USE_STATIC_LIBRARIES=yes -D CMAKE_EXE_LINKER_FLAGS="-lpthread -lz -ldl" ..
+   ```
+
+   It may also be necessary to force the usage of older ABIs standards for C++.  To accomplish this,
+   a switch along the lines of:
+
+   ```bash
+   -D_GLIBCXX_USE_CXX11_ABI=0
+   ```
+
+   will have to be added to the "CMAKE_CXX_FLAGS" option in the project's CMakeLists.txt file.
+
 1. If using the Gadgetron for reconstruction, obtain and configure code similarly, to use the HDF5 supplied with Orchestra:
 
     ```bash
@@ -56,7 +73,9 @@ Orchestra conversion tools
     cd ../
     ```
 
-    On some systems, with multiple versions of gcc, to force Gadgetron to compile with the appropriate version of gcc (since at least version 6 is required), you can be explicit to cmake about the compiler it should use with a command like:
+    On some systems, with multiple versions of gcc, to force Gadgetron to compile with the appropriate
+    version of gcc (since at least version 6 is required), you can be explicit to cmake about the compiler
+    it should use with a command like:
 
     ```bash
     cmake   -D CMAKE_C_COMPILER=/usr/bin/gcc-6   -D CMAKE_CXX_COMPILER=/usr/bin/g++-6   -D CMAKE_INSTALL_PREFIX=$GADGETRON_HOME   -D HDF5_USE_STATIC_LIBRARIES=yes   -D CMAKE_EXE_LINKER_FLAGS="-lpthread -lz -ldl" ..
@@ -78,7 +97,9 @@ Orchestra conversion tools
     make install
     cd ../
     ```
-1. Make sure `$ISMRMRD_HOME/bin` and `$GE_TOOLS_HOME/bin` are added to your environment's `PATH` variable, and that `$ISMRMRD_HOME/lib` and `$GE_TOOLS_HOME/lib` are added to your environment's `LD_LIBRARY_PATH` variable, to be able to use the libraries and binaries supplied with these tools.
+1. Make sure `$ISMRMRD_HOME/bin` and `$GE_TOOLS_HOME/bin` are added to your environment's `PATH` variable,
+   and that `$ISMRMRD_HOME/lib` and `$GE_TOOLS_HOME/lib` are added to your environment's `LD_LIBRARY_PATH`
+   variable, to be able to use the libraries and binaries supplied with these tools.
 
 1. A typical command line to convert the supplied P-file using this library is:
 
@@ -92,7 +113,8 @@ Orchestra conversion tools
    pfile2ismrmrd -v -l libp2i-NIH.so -p NIH2dfastConverter -x $GE_TOOLS_HOME/share/ge-tools/config/default.xsl P21504_FSE.7
    ```
 
-   The source code that enables this example is included with these tools.  This example is a straightforward copy of the GenericConverter, but it shows how these classes can be inherited from and implemented.
+   The source code that enables this example is included with these tools. This example is a straightforward
+   copy of the GenericConverter, but it shows how these classes can be inherited from and implemented.
 
 1. Similarly, a typical command line to convert an example ScanArchive file using this library is:
 
