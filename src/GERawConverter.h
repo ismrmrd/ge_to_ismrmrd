@@ -77,9 +77,10 @@ private:
     std::string stylesheet_;
 
     GERecon::Legacy::PfilePointer pfile_;
+
+    GERecon::ScanArchivePointer scanArchive_;
     GERecon::Legacy::LxDownloadDataPointer lxData_;
     GERecon::Control::ProcessingControlPointer processingControl_;
-    GERecon::ScanArchivePointer scanArchive_;
     int rawObjectType_; // to allow reference to a P-File or ScanArchive object
     std::shared_ptr<Plugin> plugin_;
 

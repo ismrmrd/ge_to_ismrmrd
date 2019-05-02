@@ -8,7 +8,7 @@
 #include "GenericConverter.h"
 
 struct LOADTEST {
-  LOADTEST()  { std::cerr << __FILE__ << ": shared object loaded" << std::endl; }
+   LOADTEST() { std::cerr << __FILE__ << ": shared object loaded"   << std::endl; }
   ~LOADTEST() { std::cerr << __FILE__ << ": shared object unloaded" << std::endl; }
 } loadTest;
 
@@ -43,7 +43,7 @@ int GenericConverter::get_view_idx(GERecon::Control::ProcessingControlPointer pr
 
 
 
-std::vector<ISMRMRD::Acquisition> GenericConverter::getAcquisitions(GERecon::Legacy::Pfile* pfile,
+std::vector<ISMRMRD::Acquisition> GenericConverter::getAcquisitions(GERecon::Legacy::PfilePointer &pfile,
                                                                     unsigned int acqMode)
 {
     std::vector<ISMRMRD::Acquisition> acqs;
@@ -179,14 +179,13 @@ std::vector<ISMRMRD::Acquisition> GenericConverter::getAcquisitions(GERecon::Leg
 
 
 
-std::vector<ISMRMRD::Acquisition> GenericConverter::getAcquisitions(GERecon::ScanArchive* scanArchive,
+std::vector<ISMRMRD::Acquisition> GenericConverter::getAcquisitions(GERecon::ScanArchivePointer &scanArchivePtr,
                                                                     unsigned int acqMode)
 {
    std::vector<ISMRMRD::Acquisition> acqs;
 
-   GERecon::ScanArchivePointer scanArchivePtr(scanArchive);
    GERecon::Acquisition::ArchiveStoragePointer archiveStoragePointer = GERecon::Acquisition::ArchiveStorage::Create(scanArchivePtr);
-   GERecon::Legacy::LxDownloadDataPointer lxData = boost::dynamic_pointer_cast<GERecon::Legacy::LxDownloadData>(scanArchive->LoadDownloadData());
+   GERecon::Legacy::LxDownloadDataPointer lxData = boost::dynamic_pointer_cast<GERecon::Legacy::LxDownloadData>(scanArchivePtr->LoadDownloadData());
    boost::shared_ptr<GERecon::Legacy::LxControlSource> const controlSource = boost::make_shared<GERecon::Legacy::LxControlSource>(lxData);
    GERecon::Control::ProcessingControlPointer processingControl = controlSource->CreateOrchestraProcessingControl();
 

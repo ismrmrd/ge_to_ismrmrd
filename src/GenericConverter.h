@@ -10,10 +10,10 @@ namespace PfileToIsmrmrd {
 class GenericConverter: public SequenceConverter
 {
 public:
-    virtual std::vector<ISMRMRD::Acquisition> getAcquisitions (GERecon::Legacy::Pfile* pfile,
+    virtual std::vector<ISMRMRD::Acquisition> getAcquisitions (GERecon::Legacy::PfilePointer &pfile,
                                                                unsigned int view_num);
 
-    virtual std::vector<ISMRMRD::Acquisition> getAcquisitions (GERecon::ScanArchive* scanArchive,
+    virtual std::vector<ISMRMRD::Acquisition> getAcquisitions (GERecon::ScanArchivePointer &scanArchivePtr,
                                                                unsigned int view_num);
 
 protected:

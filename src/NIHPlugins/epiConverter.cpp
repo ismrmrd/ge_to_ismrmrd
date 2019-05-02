@@ -4,7 +4,7 @@
 #include "epiConverter.h"
 
 
-std::vector<ISMRMRD::Acquisition> NIHepiConverter::getAcquisitions(GERecon::Legacy::Pfile* pfile,
+std::vector<ISMRMRD::Acquisition> NIHepiConverter::getAcquisitions(GERecon::Legacy::PfilePointer &pfile,
                                                                    unsigned int acqMode)
 {
    std::cerr << "Currently, conversion of EPI P-files is __NOT__ supported." << std::endl;
@@ -14,16 +14,15 @@ std::vector<ISMRMRD::Acquisition> NIHepiConverter::getAcquisitions(GERecon::Lega
 
 
 
-std::vector<ISMRMRD::Acquisition> NIHepiConverter::getAcquisitions(GERecon::ScanArchive* scanArchive,
+std::vector<ISMRMRD::Acquisition> NIHepiConverter::getAcquisitions(GERecon::ScanArchivePointer &scanArchivePtr,
                                                                    unsigned int acqMode)
 {
    std::cerr << "Using NIHepi ScanArchive converter." << std::endl;
 
-   GERecon::ScanArchivePointer scanArchivePtr(scanArchive);
    boost::filesystem::path scanArchivePath = scanArchivePtr->Path();
 
    GERecon::Acquisition::ArchiveStoragePointer archiveStoragePointer    = GERecon::Acquisition::ArchiveStorage::Create(scanArchivePtr);
-   GERecon::Legacy::LxDownloadDataPointer lxData                        = boost::dynamic_pointer_cast<GERecon::Legacy::LxDownloadData>(scanArchive->LoadDownloadData());
+   GERecon::Legacy::LxDownloadDataPointer lxData                        = boost::dynamic_pointer_cast<GERecon::Legacy::LxDownloadData>(scanArchivePtr->LoadDownloadData());
    boost::shared_ptr<GERecon::Epi::LxControlSource> const controlSource = boost::make_shared<GERecon::Epi::LxControlSource>(lxData);
    GERecon::Control::ProcessingControlPointer processingControl         = controlSource->CreateOrchestraProcessingControl();
 

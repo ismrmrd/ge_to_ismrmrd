@@ -3,7 +3,7 @@
 
 #include "2dfastNoiseConverter.h"
 
-std::vector<ISMRMRD::Acquisition> NIH2dfastNoiseConverter::getAcquisitions(GERecon::Legacy::Pfile* pfile,
+std::vector<ISMRMRD::Acquisition> NIH2dfastNoiseConverter::getAcquisitions(GERecon::Legacy::PfilePointer &pfile,
                                                                            unsigned int acqMode)
 {
     std::vector<ISMRMRD::Acquisition> acqs;
@@ -94,14 +94,13 @@ std::vector<ISMRMRD::Acquisition> NIH2dfastNoiseConverter::getAcquisitions(GERec
 
 
 
-std::vector<ISMRMRD::Acquisition> NIH2dfastNoiseConverter::getAcquisitions(GERecon::ScanArchive* scanArchive,
+std::vector<ISMRMRD::Acquisition> NIH2dfastNoiseConverter::getAcquisitions(GERecon::ScanArchivePointer &scanArchivePtr,
                                                                            unsigned int acqMode)
 {
    std::vector<ISMRMRD::Acquisition> acqs;
 
-   GERecon::ScanArchivePointer scanArchivePtr(scanArchive);
    GERecon::Acquisition::ArchiveStoragePointer archiveStoragePointer = GERecon::Acquisition::ArchiveStorage::Create(scanArchivePtr);
-   GERecon::Legacy::LxDownloadDataPointer lxData = boost::dynamic_pointer_cast<GERecon::Legacy::LxDownloadData>(scanArchive->LoadDownloadData());
+   GERecon::Legacy::LxDownloadDataPointer lxData = boost::dynamic_pointer_cast<GERecon::Legacy::LxDownloadData>(scanArchivePtr->LoadDownloadData());
    boost::shared_ptr<GERecon::Legacy::LxControlSource> const controlSource = boost::make_shared<GERecon::Legacy::LxControlSource>(lxData);
    GERecon::Control::ProcessingControlPointer processingControl = controlSource->CreateOrchestraProcessingControl();
 

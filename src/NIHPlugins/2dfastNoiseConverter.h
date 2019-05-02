@@ -10,10 +10,10 @@
 class NIH2dfastNoiseConverter: public PfileToIsmrmrd::GenericConverter
 {
 public:
-   std::vector<ISMRMRD::Acquisition> getAcquisitions(GERecon::Legacy::Pfile* pfile,
+   std::vector<ISMRMRD::Acquisition> getAcquisitions(GERecon::Legacy::PfilePointer &pfile,
                                                      unsigned int acqMode);
 
-   std::vector<ISMRMRD::Acquisition> getAcquisitions(GERecon::ScanArchive* scanArchive,
+   std::vector<ISMRMRD::Acquisition> getAcquisitions(GERecon::ScanArchivePointer &scanArchive,
                                                      unsigned int acqMode);
 };
 

@@ -1,4 +1,3 @@
-
 /** @file GERawConverter.cpp */
 #include <iostream>
 #include <stdexcept>
@@ -332,11 +331,11 @@ std::vector<ISMRMRD::Acquisition> GERawConverter::getAcquisitions(unsigned int v
 {
    if (rawObjectType_ == SCAN_ARCHIVE_RAW_TYPE)
    {
-      return plugin_->getConverter()->getAcquisitions(scanArchive_.get(), view_num);
+     return plugin_->getConverter()->getAcquisitions(scanArchive_, view_num);
    }
    else
    {
-      return plugin_->getConverter()->getAcquisitions(pfile_.get(), view_num);
+      return plugin_->getConverter()->getAcquisitions(pfile_, view_num);
    }
 }
 

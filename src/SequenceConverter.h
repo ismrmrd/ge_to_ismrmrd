@@ -85,10 +85,10 @@ public:
      * Pure virtual function templates
      */
 
-    virtual std::vector<ISMRMRD::Acquisition> getAcquisitions(GERecon::Legacy::Pfile*     pfile,
+    virtual std::vector<ISMRMRD::Acquisition> getAcquisitions(GERecon::Legacy::PfilePointer &pfile,
                                                               unsigned int view_num) = 0;
 
-    virtual std::vector<ISMRMRD::Acquisition> getAcquisitions(GERecon::ScanArchive* scanArchive,
+    virtual std::vector<ISMRMRD::Acquisition> getAcquisitions(GERecon::ScanArchivePointer &scanArchive,
                                                               unsigned int view_num) = 0;
 };
 
