@@ -21,12 +21,16 @@ if (NOT ORCHESTRA_FOUND)
     return()
 endif()
 
-add_definitions(-std=c++11 ${ORCHESTRA_DEFINITIONS})
+add_definitions(${ORCHESTRA_DEFINITIONS})
 
 if(APPLE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libstdc++")
 endif(APPLE)
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+
+message(STATUS, "CXX flags are ${CMAKE_CXX_FLAGS}")
+message(STATUS, "Orchestra definitions are ${ORCHESTRA_DEFINITIONS}")
 
 # build C++ converter
 add_subdirectory(src)

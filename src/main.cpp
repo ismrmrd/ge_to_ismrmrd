@@ -27,14 +27,16 @@ int main (int argc, char *argv[])
     std::string usage("pfile2ismrmrd [options] <input P-File>");
     std::string config_default = get_ge_tools_home() + "share/ge-tools/config/default.xml";
     std::string stylesheet_default = get_ge_tools_home() + "share/ge-tools/config/default.xsl";
+    std::string library_file_default = get_ge_tools_home() + "lib/libp2i-generic.so";
+    std::string sequence_class_default = "GenericConverter";
 
     po::options_description basic("Basic Options");
     basic.add_options()
         ("help,h", "print help message")
         ("verbose,v", "enable verbose mode")
-        ("library,l", po::value<std::string>(&libpath)->default_value(""), "name of library with converter plugin, or full path if not in $LD_LIBRARY_PATH")
+        ("library,l", po::value<std::string>(&libpath)->default_value(library_file_default), "name of library with converter plugin, or full path if not in $LD_LIBRARY_PATH")
         ("config,c", po::value<std::string>(&configfile)->default_value(config_default), "XML configuration file mapping acquisition sequence to converter class")
-        ("plugin,p", po::value<std::string>(&classname)->default_value(""), "class/sequence name in library used for conversion")
+        ("plugin,p", po::value<std::string>(&classname)->default_value(sequence_class_default), "class/sequence name in library used for conversion")
         ("stylesheet,x", po::value<std::string>(&stylesheet)->default_value(stylesheet_default), "XSL stylesheet file mapping values provided by Orchestra to those needed by ISMRMRD")
         ("output,o", po::value<std::string>(&outfile)->default_value("testdata.h5"), "output HDF5 file")
         ("string,s", "only print the HDF5 XML header")

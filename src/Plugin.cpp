@@ -18,9 +18,9 @@ void Plugin::load(const std::string& filepath, const std::string& classname)
     const char *dlsym_error = dlerror();        // Reset error indicator
 
     // Attempt to open the library
-    dll_ = std::shared_ptr<void>(dlopen(filepath.c_str(), RTLD_LAZY), dlclose);
+    dll_ = std::unique_ptr<void, int(*)(void *)>(dlopen(filepath.c_str(), RTLD_LAZY), dlclose);
     dlsym_error = dlerror();
-    if (!dll_ || dlsym_error) {
+    if (!dll_.get() || dlsym_error) {
         throw std::runtime_error("Failed to open library " + filepath +
                 " (" + std::string(dlsym_error) + ")");
     }
