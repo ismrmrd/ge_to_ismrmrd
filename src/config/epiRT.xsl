@@ -165,7 +165,7 @@
          <encodedSpace>
             <matrixSize>
                <x><xsl:value-of select="Header/TransformXRes"/></x>
-               <y><xsl:value-of select="Header/AcquiredYRes"/></y>
+               <y><xsl:value-of select="Header/epiParameters/AcquiredYRes"/></y>
                <xsl:choose>
                   <xsl:when test="(Header/Is3DAcquisition)='true'">
                      <z><xsl:value-of select="Header/AcquiredZRes"/></z>

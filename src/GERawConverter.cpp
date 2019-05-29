@@ -451,6 +451,7 @@ static std::string ge_header_to_xml(GERecon::Legacy::LxDownloadDataPointer lxDat
 
     writer.formatElement("AcquiredXRes", "%d",     processingControl->Value<int>("AcquiredXRes"));
     writer.formatElement("AcquiredYRes", "%d",     processingControl->Value<int>("AcquiredYRes"));
+    std::cout << "In GERawConverter, AcquiredYRes = " << processingControl->Value<int>("AcquiredYRes") << std::endl;
     writer.formatElement("AcquiredZRes", "%d",     processingControl->Value<int>("AcquiredZRes"));
 
     writer.addBooleanElement("EvenEchoFrequencyFlip", processingControl->Value<bool>("EvenEchoFrequencyFlip"));
@@ -587,10 +588,12 @@ static std::string ge_header_to_xml(GERecon::Legacy::LxDownloadDataPointer lxDat
         writer.startElement("epiParameters");
           writer.addBooleanElement("isEpiRefScanIntegrated",   procCtrlEPI->Value<bool>("IntegratedReferenceScan"));
           writer.addBooleanElement("MultibandEnabled",         procCtrlEPI->ValueStrict<bool>("MultibandEnabled"));
-          writer.formatElement("ExtraFramesTop", "%d",      procCtrlEPI->Value<int>("ExtraFramesTop"));
-          writer.formatElement("ExtraFramesBottom", "%d",   procCtrlEPI->Value<int>("ExtraFramesBottom"));
+          writer.formatElement("ExtraFramesTop", "%d",         procCtrlEPI->Value<int>("ExtraFramesTop"));
+          writer.formatElement("AcquiredYRes", "%d",           procCtrlEPI->Value<int>("AcquiredYRes"));
+          std::cout << "In epiConverter, AcquiredYRes = " <<   procCtrlEPI->Value<int>("AcquiredYRes") << std::endl;
+          writer.formatElement("ExtraFramesBottom", "%d",      procCtrlEPI->Value<int>("ExtraFramesBottom"));
           // writer.formatElement("NumRefViews", "%d",         procCtrlEPI->Value<int>("NumRefViews")); // not found at run time up to Orchestra 1.7.1
-          writer.formatElement("NumRefViews", "%d",        (procCtrlEPI->Value<int>("ExtraFramesTop") + procCtrlEPI->Value<int>("ExtraFramesBottom")));
+          writer.formatElement("NumRefViews", "%d",           (procCtrlEPI->Value<int>("ExtraFramesTop") + procCtrlEPI->Value<int>("ExtraFramesBottom")));
           // writer.formatElement("nMultiBandSlices", "%d",    procCtrlEPI->ValueStrict<int>("MultibandNumAcquiredSlices"));
           // writer.formatElement("NumberOfShots", "%d",       procCtrlEPI->Value<unsigned int>("NumberOfShots"));
           // writer.formatElement("NumAcqsPerRep", "%d",       procCtrlEPI->Value<int>("NumAcquisitionsPerRepetition"));
