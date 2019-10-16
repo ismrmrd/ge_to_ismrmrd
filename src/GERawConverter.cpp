@@ -7,6 +7,11 @@
 #include <libxslt/transform.h>
 #include <libxslt/xsltutils.h>
 
+// TW GE stuff
+#include <imagedb.h>
+// get some C++14 functionality for fs into C++11
+#include <experimental/filesystem> 
+
 // Local
 #include "GERawConverter.h"
 #include "XMLWriter.h"
@@ -55,14 +60,62 @@ GERawConverter::GERawConverter(const std::string& rawFilePath, bool logging)
     psdname_ = ""; // TODO: find PSD Name in Orchestra Pfile class
     log_ << "PSDName: " << psdname_ << std::endl;
 
+    // check whether the input file even exists
+    if(!std::experimental::filesystem::exists(rawFilePath)) {
+        throw std::runtime_error("raw file path does not exist !");
+    }
+
     // Use Orchestra to figure out if P-File or ScanArchive
+    // TW: the static function IsArchiveFilePath exists only in the ScanArchive class even though
+    //     we don't know yet wether its actually a scan archive, but the super class Archive doesnt implement it
+    //     Most code below simoly assumes that this is a ScanArchive file
     if (GERecon::ScanArchive::IsArchiveFilePath(rawFilePath))
     {
         scanArchive_ = GERecon::ScanArchive::Create(rawFilePath, GESystem::Archive::LoadMode);
-        lxData_ = boost::dynamic_pointer_cast<GERecon::Legacy::LxDownloadData>(scanArchive_->LoadDownloadData());
 
-	boost::shared_ptr<GERecon::Legacy::LxControlSource> const controlSource = boost::make_shared<GERecon::Legacy::LxControlSource>(lxData_);
-	processingControl_ = controlSource->CreateOrchestraProcessingControl();
+        // Get the Archive Header
+        if(scanArchive_->HasHeader()) {
+            GERecon::ArchiveHeaderPointer archiveHeader_ = scanArchive_->LoadHeader();
+            // we want this to be of result "ScanArchive"
+            log_ << "ArchiveType: " << archiveHeader_->ArchiveType() << std::endl;
+            if(archiveHeader_->ArchiveType().compare("ScanArchive")!=0) {
+                throw std::runtime_error("ArchiveType is not a ScanArchive. Not supportged by this converter");
+            }
+            
+            // So far I have seen three results of ScanType()
+            // "Autoshim"
+            // "Scan"
+            // "PrescanRecital"
+            log_ << "ScanType: " << archiveHeader_->ScanType() << std::endl;
+            if(archiveHeader_->ScanType().compare("Scan")!=0) {
+                throw std::runtime_error("ScanType is not Scan. Not yet supportged by this converter");
+            }
+            
+        } else {
+            // this is not going anywhere
+            throw std::runtime_error("Archive has no ArchiveHeader...game over");
+        }
+
+        lxData_ = boost::dynamic_pointer_cast<GERecon::Legacy::LxDownloadData>(scanArchive_->LoadDownloadData());
+        log_ << "TW: Acquired LxDownloadData !" << std::endl;
+
+        // TW: probe the header data here for fun
+        // based on include/recon/Orchestra/Legacy/LxDownloadData.h
+        
+        // const MrImageDataTypeStruct& ImageHeaderData() const;
+        // Note I have to const cast the dereferenced object, because its wrapped in a shared pointer
+        // Also I have to const cast in the first place, because the class has overloaded const and non-const member
+        // functions with only the const members being exposed by a public interface
+        std::cout << "PSDname: " << const_cast<const GERecon::Legacy::LxDownloadData&>(*lxData_).ImageHeaderData().psdname << std::endl;
+        std::cout << std::endl << std::endl << std::endl;
+
+        // Series header protocol prtcl
+        std::cout << "protocol name: " << const_cast<const GERecon::Legacy::LxDownloadData&>(*lxData_).SeriesData().prtcl << std::endl;
+        std::cout << "series description: " << const_cast<const GERecon::Legacy::LxDownloadData&>(*lxData_).SeriesData().se_desc << std::endl;
+        std::cout << "Series desription II: " << const_cast<const GERecon::Legacy::LxDownloadData&>(*lxData_).SeriesDescription() << std::endl;
+        std::cout << "TW: Chosing LxControlSource for this Archive !" << std::endl << std::endl;
+	    boost::shared_ptr<GERecon::Legacy::LxControlSource> const controlSource = boost::make_shared<GERecon::Legacy::LxControlSource>(lxData_);
+	    processingControl_ = controlSource->CreateOrchestraProcessingControl();
 
         rawObjectType_ = SCAN_ARCHIVE_RAW_TYPE;
     }
@@ -91,6 +144,10 @@ void GERawConverter::usePlugin(const std::string& filename, const std::string& c
 void GERawConverter::useStylesheetFilename(const std::string& filename)
 {
     log_ << "Loading stylesheet: " << filename << std::endl;
+    if(!std::experimental::filesystem::exists(filename)) {
+        throw std::runtime_error("Stylesheet path does not exist !");
+    }
+
     std::ifstream stream(filename.c_str(), std::ios::binary);
     useStylesheetStream(stream);
 }
