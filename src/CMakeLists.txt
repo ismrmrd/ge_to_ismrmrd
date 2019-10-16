@@ -39,6 +39,7 @@ install(DIRECTORY config/
         DESTINATION share/ge-tools/config)
 
 add_subdirectory(NIHPlugins)
+add_subdirectory(QPlugins)
 
 # API documentation
 find_package(Doxygen)
