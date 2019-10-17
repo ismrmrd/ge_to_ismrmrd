@@ -79,7 +79,7 @@ GERawConverter::GERawConverter(const std::string& rawFilePath, bool logging)
             // we want this to be of result "ScanArchive"
             log_ << "ArchiveType: " << archiveHeader_->ArchiveType() << std::endl;
             if(archiveHeader_->ArchiveType().compare("ScanArchive")!=0) {
-                throw std::runtime_error("ArchiveType is not a ScanArchive. Not supportged by this converter");
+                throw std::runtime_error("ArchiveType is not a ScanArchive. Not supported by this converter");
             }
             
             // So far I have seen three results of ScanType()
@@ -88,7 +88,7 @@ GERawConverter::GERawConverter(const std::string& rawFilePath, bool logging)
             // "PrescanRecital"
             log_ << "ScanType: " << archiveHeader_->ScanType() << std::endl;
             if(archiveHeader_->ScanType().compare("Scan")!=0) {
-                throw std::runtime_error("ScanType is not Scan. Not yet supportged by this converter");
+                throw std::runtime_error("ScanType is not Scan. Not yet supported by this converter");
             }
             
         } else {
