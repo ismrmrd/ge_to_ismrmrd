@@ -486,7 +486,9 @@ static std::string ge_header_to_xml(GERecon::Legacy::LxDownloadDataPointer lxDat
     writer.formatElement("Name", "%s",             patientModule->Name().c_str());
     writer.formatElement("ID", "%s",               patientModule->ID().c_str());
     writer.formatElement("Birthdate", "%s",        patientModule->Birthdate().c_str());
-    writer.formatElement("Gender", "%s",           patientModule->Gender().c_str());
+    // GE returns a string with a whitespace following the letter of the gender, which is not
+    //    ISMRMRD XML schema compliant, so this needs to be truncated here
+    writer.formatElement("Gender", "%s",           patientModule->Gender().substr(0,1).c_str());
     writer.formatElement("Age", "%s",              patientStudyModule->Age().c_str());
     writer.formatElement("Weight", "%s",           patientStudyModule->Weight().c_str());
     writer.formatElement("History", "%s",          patientStudyModule->History().c_str());
