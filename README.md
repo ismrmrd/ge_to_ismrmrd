@@ -49,8 +49,12 @@ Orchestra conversion tools
    to have the ISMRMRD build explicitly refer to Orchestra's Boost libraries, with a command like:
 
    ```bash
-   cmake -D Boost_INCLUDE_DIR=$SDKTOP/include/recon/3p/Linux/boost_1_55_0_dev_linux64/include/ -D CMAKE_INSTALL_PREFIX=$ISMRMRD_HOME -D HDF5_USE_STATIC_LIBRARIES=yes -D CMAKE_EXE_LINKER_FLAGS="-lpthread -lz -ldl" ..
+   cmake -D Boost_NO_SYSTEM_PATHS=TRUE -D BOOST_ROOT:PATHNAME=$SDKTOP/include/recon/3p/Linux/boost_1_55_0_dev_linux64 -D CMAKE_INSTALL_PREFIX=$ISMRMRD_HOME -D HDF5_USE_STATIC_LIBRARIES=yes -D CMAKE_EXE_LINKER_FLAGS="-lpthread -lz -ldl" ..
    ```
+
+   A good discussion of pointing cmake to alternate Boost installations can be found at [this](
+   https://stackoverflow.com/questions/3016448/how-can-i-get-cmake-to-find-my-alternative-boost-installation)
+   link.
 
    It may also be necessary to force the usage of older ABIs standards for C++.  To accomplish this,
    a switch along the lines of:

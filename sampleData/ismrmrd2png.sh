@@ -18,7 +18,7 @@ ismrmrd2png()
 	echo "$0: $fname not found"
 	return
     fi
-    
+
     group_name=$( h5ls "$fname" | cut -d ' ' -f 1,2 | sed -e 's@\\@@' )
 
     imgsets=$( h5ls "$fname"/"$group_name" | cut -d ' ' -f 1 )
@@ -30,7 +30,7 @@ ismrmrd2png()
 
 	for (( slice=0; slice<$nslice; ++slice )); do
 	    h5topng -x $slice -r -d "$group_name"/$imgset/data -o temp.png out.h5
-	    convert temp.png -transpose ${imgset}_$( printf "%02d" $slice ).png 
+	    convert temp.png -transpose ${imgset}_$( printf "%02d" $slice ).png
 	done
 	rm -f temp.png
     done
