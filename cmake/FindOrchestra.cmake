@@ -8,52 +8,58 @@
 #
 # © 2015 Joseph Naegele
 #
-# updated in 2017 by V. R. to handle 2017 Orchestra layout
+# updated in 2017 by V. R. to handle 2017 (1.7-1) Orchestra layout
+#
+# and in 2020 for Orchestra 1.8-1 layout
 
-set(ORCHESTRA_TOPDIR $ENV{SDKTOP}/include/recon)
+set (ORCHESTRA_TOPDIR $ENV{SDKTOP})
 
 set (ORCHESTRA_INCLUDE_DIR ${ORCHESTRA_TOPDIR}/ $ENV{SDKTOP}/include/lx/include/)
-set (ORCHESTRA_INCLUDE_DIRS $ENV{SDKTOP}/include/recon/3p/Linux/)
+set (ORCHESTRA_INCLUDE_DIRS $ENV{SDKTOP}/3p/ $ENV{SDKTOP}/include/recon/)
 
 foreach(libs
-         Epi
-         EpiDiffusion
-         EpiMultiPhase
-         EpiReferenceScan
-         EpiDistortionCorrection
-         Asset
-         Scic
-         Pure1
-         Pure2
-         Arc
-         Cartesian2D
-         Cartesian3D
-         BiasCorrection
-         Calibration3D
-         Clariview
-         Gradwarp
-         Legacy
-         Core
-         Flex
-         CalibrationCommon
-         Foundation
-         Acquisition
-         Control
-         Common
-         Crucial
          Dicom
          Hdf5
          Math
-         SystemServicesImplementation
-         SystemServicesInterface
-         System
+         Acquisition
+         Arc
+         Asset
+         BiasCorrection
+         Calibration3D
+         CalibrationCommon
+         Cartesian2D
+         Cartesian3D
+         Clariview
+         Common
+         Control
+         Core
+         Crucial
+         Epi
+         EpiDiffusion
+         EpiDistortionCorrection
+         EpiMultiPhase
+         EpiReferenceScan
+         Flex
+         Foundation
+         FrameDownSampler
+         Gradwarp
+         Legacy
          MoCo
-         SpectroMultiVoxel
+         Pure1
+         Pure2
+         Scic
+         SpectroCommon
          SpectroMCSI
          SpectroMCSILegacy
+         SpectroMultiVoxel
          SpectroSingleVoxel
-         FrameDownSampler
+         Spiral
          TestSupport
+         ProcessingControl
+         ProcessingFlow
+         System
+         SystemServicesImplementation
+         SystemServicesInterface
        )
 
     message("Finding library: lib${libs}.a")
@@ -64,16 +70,16 @@ endforeach()
 # Orchestra HDF5 include directory
 find_path(ORCHESTRA_HDF5_INCLUDE_DIR hdf5.h
     PATHS ${ORCHESTRA_TOPDIR}/3p
-    PATH_SUFFIXES mac64/hdf5-1.8.12_mac64/include Linux/hdf5-1.8.12_dev_linux64/include
+    PATH_SUFFIXES include
     NO_DEFAULT_PATH)
 mark_as_advanced(${ORCHESTRA_HDF5_INCLUDE_DIR})
 list(APPEND ORCHESTRA_INCLUDE_DIRS ${ORCHESTRA_HDF5_INCLUDE_DIR})
 
 # Orchestra HDF5 libraries
-foreach(lib h5tools hdf5_cpp hdf5)
+foreach(lib h5tools hdf5_cpp hdf5 Hdf5)
     find_library(ORCHESTRA_HDF5_${lib}_LIBRARY ${lib}
-        PATHS ${ORCHESTRA_TOPDIR}/3p
-        PATH_SUFFIXES mac64/hdf5-1.8.12_mac64/lib Linux/hdf5-1.8.12_dev_linux64/lib
+        PATHS ${ORCHESTRA_TOPDIR}/3p ${ORCHESTRA_TOPDIR}/lib
+        PATH_SUFFIXES lib
         NO_DEFAULT_PATH)
     mark_as_advanced(${ORCHESTRA_HDF5_${lib}_LIBRARY})
     list(APPEND ORCHESTRA_LIBRARIES ${ORCHESTRA_HDF5_${lib}_LIBRARY})
@@ -83,7 +89,7 @@ endforeach()
 foreach(lib dcmdata dcmnet oflog ofstd)
     find_library(ORCHESTRA_DCMTK_${lib}_LIBRARY ${lib}
         PATHS ${ORCHESTRA_TOPDIR}/3p
-        PATH_SUFFIXES mac64/dcmtk-3.6.1_20140617_mac64/lib Linux/dcmtk-3.6.0_dev_linux64/lib
+        PATH_SUFFIXES lib
         NO_DEFAULT_PATH)
     mark_as_advanced(${ORCHESTRA_DCMTK_${lib}_LIBRARY})
     list(APPEND ORCHESTRA_LIBRARIES ${ORCHESTRA_DCMTK_${lib}_LIBRARY})
@@ -93,7 +99,7 @@ endforeach()
 foreach(lib fftw3f fftw3)
     find_library(ORCHESTRA_FFTW_${lib}_LIBRARY ${lib}
         PATHS ${ORCHESTRA_TOPDIR}/3p
-        PATH_SUFFIXES mac64/fftw-3.2.2_mac64/lib Linux/fftw-3.2.2_dev_linux64/lib
+        PATH_SUFFIXES lib
         NO_DEFAULT_PATH)
     mark_as_advanced(${ORCHESTRA_FFTW_${lib}_LIBRARY})
     list(APPEND ORCHESTRA_LIBRARIES ${ORCHESTRA_FFTW_${lib}_LIBRARY})
@@ -102,7 +108,7 @@ endforeach()
 # Orchestra Boost include directory
 find_path(ORCHESTRA_BOOST_INCLUDE_DIR boost/version.hpp
     PATHS ${ORCHESTRA_TOPDIR}/3p
-    PATH_SUFFIXES mac64/boost_1_55_0_mac64/include Linux/boost_1_55_0_dev_linux64/include
+    PATH_SUFFIXES include
     NO_DEFAULT_PATH)
 if(ORCHESTRA_BOOST_INCLUDE_DIR)
     mark_as_advanced(${ORCHESTRA_BOOST_INCLUDE_DIR})
@@ -115,7 +121,7 @@ endif()
 foreach(lib date_time program_options filesystem regex serialization wserialization thread system)
     find_library(ORCHESTRA_BOOST_${lib}_LIBRARY "boost_${lib}"
         PATHS ${ORCHESTRA_TOPDIR}/3p
-        PATH_SUFFIXES mac64/boost_1_55_0_mac64/lib Linux/boost_1_55_0_dev_linux64/lib
+        PATH_SUFFIXES lib
         NO_DEFAULT_PATH)
     mark_as_advanced(${ORCHESTRA_BOOST_${lib}_LIBRARY})
     list(APPEND ORCHESTRA_LIBRARIES ${ORCHESTRA_BOOST_${lib}_LIBRARY})
@@ -125,7 +131,7 @@ endforeach()
 foreach(lib lapack blas f2c)
     find_library(ORCHESTRA_LAPACK_${lib}_LIBRARY ${lib}
         PATHS ${ORCHESTRA_TOPDIR}/3p
-        PATH_SUFFIXES mac64/clapack-3.2.1_mac64/lib Linux/clapack-3.2.1_dev_linux64/lib
+        PATH_SUFFIXES lib
         NO_DEFAULT_PATH)
     mark_as_advanced(${ORCHESTRA_LAPACK_${lib}_LIBRARY})
     list(APPEND ORCHESTRA_LIBRARIES ${ORCHESTRA_LAPACK_${lib}_LIBRARY})
@@ -134,7 +140,7 @@ endforeach()
 # Orchestra Blitz include dir
 find_path(ORCHESTRA_BLITZ_INCLUDE_DIR blitz/blitz.h
     PATHS ${ORCHESTRA_TOPDIR}/3p
-    PATH_SUFFIXES mac64/blitz-0.10_mac64/include Linux/blitz-0.10_dev_linux64/include)
+    PATH_SUFFIXES include)
 if(ORCHESTRA_BLITZ_INCLUDE_DIR)
     mark_as_advanced(${ORCHESTRA_BLITZ_INCLUDE_DIR})
     list(APPEND ORCHESTRA_INCLUDE_DIRS ${ORCHESTRA_BLITZ_INCLUDE_DIR})
@@ -143,7 +149,7 @@ endif()
 # Orchestra Blitz library
 find_library(ORCHESTRA_BLITZ_LIBRARY blitz
     PATHS ${ORCHESTRA_TOPDIR}/3p
-    PATH_SUFFIXES mac64/blitz-0.10_mac64/lib Linux/blitz-0.10_dev_linux64/lib
+    PATH_SUFFIXES lib
     NO_DEFAULT_PATH)
 if(ORCHESTRA_BLITZ_LIBRARY)
     mark_as_advanced(${ORCHESTRA_BLITZ_LIBRARY})
