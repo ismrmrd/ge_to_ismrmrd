@@ -21,6 +21,7 @@
 #include <Orchestra/Acquisition/Core/ArchiveStorage.h>
 #include <Orchestra/Acquisition/DataTypes.h>
 #include <Orchestra/Acquisition/FrameControl.h>
+#include <Orchestra/Acquisition/CartesianFrameCommand.h>
 
 #include <Dicom/MR/Image.h>
 #include <Dicom/MR/ImageModule.h>
