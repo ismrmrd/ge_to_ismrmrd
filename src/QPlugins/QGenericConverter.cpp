@@ -14,6 +14,31 @@ struct LOADTEST {
 
 namespace PfileToIsmrmrd {
 
+QGenericConverter::QGenericConverter() : SequenceConverter()
+{
+   
+}
+
+// use the psdname to determine if the converter should infer the slice indices rather than
+// use the index stored in the header
+// returns:
+// true if the psdname matches a sequence where it is known that the packets don't store the slice index
+// false if the psdname is not one of the above
+bool QGenericConverter::isSliceIndexInferred(std::string& psdname) const
+{
+   // throw exception if the psdname is empty
+
+   // match strings
+   // ssfse/HASTE
+   if(psdname.compare("ssfse") == 0)
+      return true;
+
+   else
+      return false;
+   
+}
+
+
 int QGenericConverter::get_view_idx(GERecon::Control::ProcessingControlPointer processingControl,
                                    unsigned int view_num, ISMRMRD::EncodingCounters &idx)
 {
@@ -202,6 +227,12 @@ std::vector<ISMRMRD::Acquisition> QGenericConverter::getAcquisitions(GERecon::Sc
    unsigned int     numSlices = processingControl->Value<int>("NumSlices");
    size_t          frame_size = processingControl->Value<int>("AcquiredXRes");
 
+   std::cout << "PSDname: " << const_cast<const GERecon::Legacy::LxDownloadData&>(*lxData).ImageHeaderData().psdname << std::endl;
+
+   // TW: Some Slice debugging here with lots of noise
+   std::cout << "numSlices = " << numSlices << std::endl;
+
+
    while (packetCount < packetQuantity)
    {
       // encoding IDs to fill ISMRMRD headers.
@@ -222,8 +253,15 @@ std::vector<ISMRMRD::Acquisition> QGenericConverter::getAcquisitions(GERecon::Sc
 
          // output something if the opcode is not 1, to make it less noisy
          if(static_cast<uint8_t>(packetContents.opcode) != GERecon::Acquisition::ProgrammableOpcode)
-         std::cout << "viewID = " << viewID << " sliceID = " << sliceID << " opcode = " << (int)(packetContents.opcode) << std::endl << std::flush;
+            std::cout << "viewID = " << viewID << " sliceID = " << sliceID << " opcode = " << (int)(packetContents.opcode) << std::endl << std::flush;
          
+
+         //std::cout << "sliceID = " << sliceID << " (" << static_cast<int>(packetContents.sliceNumH) << "," << static_cast<int>(packetContents.sliceNumL) << ")" << std::endl;
+         if(static_cast<uint8_t>(packetContents.opcode) == GERecon::Acquisition::ProgrammableOpcode) {
+
+            GERecon::Acquisition::CartesianFrameCommand F(packetContents);
+            F.Dump(std::cout);
+         }
          // TW: temporary hack, ignore the ViewCopy opcode
          //     I'm undecided on strategy here, but Packets with no data cause:
          //     - undefined behaviour/segfault on the ->Data() call (Boo GE)
