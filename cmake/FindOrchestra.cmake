@@ -69,7 +69,7 @@ endforeach()
 
 # Orchestra HDF5 include directory
 find_path(ORCHESTRA_HDF5_INCLUDE_DIR hdf5.h
-    PATHS ${ORCHESTRA_TOPDIR}/3p
+    PATHS ${ORCHESTRA_TOPDIR}/3p   ${ORCHESTRA_TOPDIR}/include/recon/3p/mac/hdf5-1.8.12
     PATH_SUFFIXES include
     NO_DEFAULT_PATH)
 mark_as_advanced(${ORCHESTRA_HDF5_INCLUDE_DIR})
@@ -78,7 +78,7 @@ list(APPEND ORCHESTRA_INCLUDE_DIRS ${ORCHESTRA_HDF5_INCLUDE_DIR})
 # Orchestra HDF5 libraries
 foreach(lib h5tools hdf5_cpp hdf5 Hdf5)
     find_library(ORCHESTRA_HDF5_${lib}_LIBRARY ${lib}
-        PATHS ${ORCHESTRA_TOPDIR}/3p ${ORCHESTRA_TOPDIR}/lib
+        PATHS ${ORCHESTRA_TOPDIR}   ${ORCHESTRA_TOPDIR}/3p   ${ORCHESTRA_TOPDIR}/include/recon/3p/mac/hdf5-1.8.12
         PATH_SUFFIXES lib
         NO_DEFAULT_PATH)
     mark_as_advanced(${ORCHESTRA_HDF5_${lib}_LIBRARY})
@@ -88,7 +88,7 @@ endforeach()
 # Orchestra DCMTK libraries
 foreach(lib dcmdata dcmnet oflog ofstd)
     find_library(ORCHESTRA_DCMTK_${lib}_LIBRARY ${lib}
-        PATHS ${ORCHESTRA_TOPDIR}/3p
+        PATHS ${ORCHESTRA_TOPDIR}/3p   ${ORCHESTRA_TOPDIR}/include/recon/3p/mac/dcmtk-3.6.1_20140617
         PATH_SUFFIXES lib
         NO_DEFAULT_PATH)
     mark_as_advanced(${ORCHESTRA_DCMTK_${lib}_LIBRARY})
@@ -98,7 +98,7 @@ endforeach()
 # Orchestra FFTW libraries
 foreach(lib fftw3f fftw3)
     find_library(ORCHESTRA_FFTW_${lib}_LIBRARY ${lib}
-        PATHS ${ORCHESTRA_TOPDIR}/3p
+        PATHS ${ORCHESTRA_TOPDIR}/3p   ${ORCHESTRA_TOPDIR}/include/recon/3p/mac/fftw-3.2.2
         PATH_SUFFIXES lib
         NO_DEFAULT_PATH)
     mark_as_advanced(${ORCHESTRA_FFTW_${lib}_LIBRARY})
@@ -107,8 +107,8 @@ endforeach()
 
 # Orchestra Boost include directory
 find_path(ORCHESTRA_BOOST_INCLUDE_DIR boost/version.hpp
-    PATHS ${ORCHESTRA_TOPDIR}/3p
-    PATH_SUFFIXES include
+    PATHS ${ORCHESTRA_TOPDIR}/3p   ${ORCHESTRA_TOPDIR}/include/recon/3p/mac/boost_1_63_0
+    PATH_SUFFIXES include include/boost
     NO_DEFAULT_PATH)
 if(ORCHESTRA_BOOST_INCLUDE_DIR)
     mark_as_advanced(${ORCHESTRA_BOOST_INCLUDE_DIR})
@@ -120,7 +120,7 @@ endif()
 # Orchestra Boost libraries
 foreach(lib date_time program_options filesystem regex serialization wserialization thread system)
     find_library(ORCHESTRA_BOOST_${lib}_LIBRARY "boost_${lib}"
-        PATHS ${ORCHESTRA_TOPDIR}/3p
+        PATHS ${ORCHESTRA_TOPDIR}/3p   ${ORCHESTRA_TOPDIR}/include/recon/3p/mac/boost_1_63_0
         PATH_SUFFIXES lib
         NO_DEFAULT_PATH)
     mark_as_advanced(${ORCHESTRA_BOOST_${lib}_LIBRARY})
@@ -130,7 +130,7 @@ endforeach()
 # Orchestra LAPACK libraries
 foreach(lib lapack blas f2c)
     find_library(ORCHESTRA_LAPACK_${lib}_LIBRARY ${lib}
-        PATHS ${ORCHESTRA_TOPDIR}/3p
+        PATHS ${ORCHESTRA_TOPDIR}/3p   ${ORCHESTRA_TOPDIR}/include/recon/3p/mac/clapack-3.2.1
         PATH_SUFFIXES lib
         NO_DEFAULT_PATH)
     mark_as_advanced(${ORCHESTRA_LAPACK_${lib}_LIBRARY})
@@ -139,7 +139,7 @@ endforeach()
 
 # Orchestra Blitz include dir
 find_path(ORCHESTRA_BLITZ_INCLUDE_DIR blitz/blitz.h
-    PATHS ${ORCHESTRA_TOPDIR}/3p
+    PATHS ${ORCHESTRA_TOPDIR}/3p   ${ORCHESTRA_TOPDIR}/include/recon/3p/mac/blitz-0.10
     PATH_SUFFIXES include)
 if(ORCHESTRA_BLITZ_INCLUDE_DIR)
     mark_as_advanced(${ORCHESTRA_BLITZ_INCLUDE_DIR})
@@ -148,7 +148,7 @@ endif()
 
 # Orchestra Blitz library
 find_library(ORCHESTRA_BLITZ_LIBRARY blitz
-    PATHS ${ORCHESTRA_TOPDIR}/3p
+    PATHS ${ORCHESTRA_TOPDIR}/3p   ${ORCHESTRA_TOPDIR}/include/recon/3p/mac/blitz-0.10
     PATH_SUFFIXES lib
     NO_DEFAULT_PATH)
 if(ORCHESTRA_BLITZ_LIBRARY)
