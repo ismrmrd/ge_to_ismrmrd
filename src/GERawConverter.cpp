@@ -77,6 +77,10 @@ GERawConverter::GERawConverter(const std::string& rawFilePath, bool logging)
 
         rawObjectType_ = PFILE_RAW_TYPE;
     }
+
+    // Testing dumping of raw file header as XML.
+    // processingControl_->SaveAsXml("rawHeader.xml");  // As of Orchestra 1.8-1, this is causing a crash, with
+                                                     // an incomplete file written.
 }
 
 /**
