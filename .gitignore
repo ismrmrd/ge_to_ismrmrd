@@ -31,3 +31,6 @@ tags
 # OS X
 .DS_Store
 
+Doxyfile.Orchestra
+sampleData/notebooks/.ipynb_checkpoints/
+
