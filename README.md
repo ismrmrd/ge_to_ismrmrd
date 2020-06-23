@@ -37,7 +37,6 @@ Orchestra conversion tools
 
     ```bash
     cd ismrmrd/
-    git checkout GE-compat
     mkdir build
     cd build/
     cmake -D build4GE=ON -D CMAKE_INSTALL_PREFIX=$ISMRMRD_HOME -D HDF5_USE_STATIC_LIBRARIES=yes -D CMAKE_EXE_LINKER_FLAGS="-lpthread -lz -ldl" ..
