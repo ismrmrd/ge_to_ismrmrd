@@ -20,7 +20,7 @@ target_link_libraries(${P2I_LIB}
 install(TARGETS ${P2I_LIB} DESTINATION lib)
 install(FILES SequenceConverter.h DESTINATION include/ge-tools)
 
-set(P2I_EXE "pfile2ismrmrd")
+set(P2I_EXE "ge2ismrmrd")
 add_executable(${P2I_EXE} main.cpp)
 target_link_libraries(${P2I_EXE}
     ${P2I_LIB}

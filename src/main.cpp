@@ -24,7 +24,10 @@ int main (int argc, char *argv[])
     commandLineOptions.SetupCommandLine(argc, argv);
 
     std::string configfile, libpath, classname, stylesheet, rawFile, outfile;
-    std::string usage("pfile2ismrmrd [options] <input P-File>");
+
+    std::string thisProgram = argv[0];
+    std::string validInputs = "input P- or ScanArchive File";
+    std::string usage = thisProgram + " [options] <" + validInputs + ">";
     std::string config_default = get_ge_tools_home() + "share/ge-tools/config/default.xml";
     std::string stylesheet_default = get_ge_tools_home() + "share/ge-tools/config/default.xsl";
     std::string library_file_default = get_ge_tools_home() + "lib/libp2i-generic.so";
@@ -46,7 +49,7 @@ int main (int argc, char *argv[])
 
     po::options_description input("Input Options");
     input.add_options()
-        ("input,i", po::value<std::string>(&rawFile), "input P- or ScanArchive File")
+        ("input,i", po::value<std::string>(&rawFile), validInputs.c_str())
         ;
 
     po::options_description all_options("Options");
