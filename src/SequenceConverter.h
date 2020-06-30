@@ -22,16 +22,16 @@
 #include <Orchestra/Acquisition/DataTypes.h>
 #include <Orchestra/Acquisition/FrameControl.h>
 
-#include <Dicom/MR/Image.h>
-#include <Dicom/MR/ImageModule.h>
-#include <Dicom/MR/PrivateAcquisitionModule.h>
-#include <Dicom/Patient.h>
-#include <Dicom/PatientModule.h>
-#include <Dicom/PatientStudyModule.h>
-#include <Dicom/Equipment.h>
-#include <Dicom/EquipmentModule.h>
-#include <Dicom/ImagePlaneModule.h>
-#include <Dicom/UID.h>
+#include <Dicom/Core/MR/Image.h>
+#include <Dicom/Core/MR/ImageModule.h>
+#include <Dicom/Core/MR/PrivateAcquisitionModule.h>
+#include <Dicom/Core/Patient.h>
+#include <Dicom/Core/PatientModule.h>
+#include <Dicom/Core/PatientStudyModule.h>
+#include <Dicom/Core/Equipment.h>
+#include <Dicom/Core/EquipmentModule.h>
+#include <Dicom/Core/ImagePlaneModule.h>
+#include <Dicom/Core/UID.h>
 
 // Trying to see if putting sequence-specific headers here will allow creation
 // of sequence-specific control objects in the GERawConverter module, which

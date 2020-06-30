@@ -60,6 +60,8 @@ foreach(libs
          System
          SystemServicesImplementation
          SystemServicesInterface
+         CalibrationMatchers
+         MaestroModels
        )
 
     message("Finding library: lib${libs}.a")
