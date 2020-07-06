@@ -39,7 +39,7 @@ Orchestra conversion tools
     cd ismrmrd/
     mkdir build
     cd build/
-    cmake -D build4GE=ON -D CMAKE_INSTALL_PREFIX=$ISMRMRD_HOME -D HDF5_USE_STATIC_LIBRARIES=yes -D CMAKE_EXE_LINKER_FLAGS="-lpthread -lz -ldl" ..
+    cmake -D build4GE=ON -D CMAKE_INSTALL_PREFIX=$ISMRMRD_HOME ..
     make install
     cd ../
     ```
