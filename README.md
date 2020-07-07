@@ -65,25 +65,7 @@ Orchestra conversion tools
 
    will have to be added to the "CMAKE_CXX_FLAGS" option in the project's CMakeLists.txt file.
 
-1. If using the Gadgetron for reconstruction, obtain and configure code similarly, to use the HDF5 supplied with Orchestra:
-
-    ```bash
-    git clone https://github.com/gadgetron/gadgetron.git
-    cd gadgetron/
-    mkdir build
-    cd build/
-    cmake   -D CMAKE_INSTALL_PREFIX=$GADGETRON_HOME   -D HDF5_USE_STATIC_LIBRARIES=yes   -D CMAKE_EXE_LINKER_FLAGS="-lpthread -lz -ldl" ..
-    make install
-    cd ../
-    ```
-
-    On some systems, with multiple versions of gcc, to force Gadgetron to compile with the appropriate
-    version of gcc (since at least version 6 is required), you can be explicit to cmake about the compiler
-    it should use with a command like:
-
-    ```bash
-    cmake   -D CMAKE_C_COMPILER=/usr/bin/gcc-6   -D CMAKE_CXX_COMPILER=/usr/bin/g++-6   -D CMAKE_INSTALL_PREFIX=$GADGETRON_HOME   -D HDF5_USE_STATIC_LIBRARIES=yes   -D CMAKE_EXE_LINKER_FLAGS="-lpthread -lz -ldl" ..
-    ```
+1. If using the Gadgetron for reconstruction, please use a standard Gadgetron installation or Docker container.  The Gadgetron now requires Boost version 1.65, or newer, which is newer than that supplied with GE's latest Orchestra Linux SDK.  Therefore, Gadgetron currently cannot be built against GE's Orchestra Linux SDK.
 
 1. Obtain the GE converter source code:
 
