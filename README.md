@@ -65,7 +65,7 @@ Orchestra conversion tools
 
    will have to be added to the "CMAKE_CXX_FLAGS" option in the project's CMakeLists.txt file.
 
-1. If using the Gadgetron for reconstruction, please use a standard Gadgetron installation or Docker container.  The Gadgetron now requires Boost version 1.65, or newer, which is newer than that supplied with GE's latest Orchestra Linux SDK.  Therefore, Gadgetron currently cannot be built against GE's Orchestra Linux SDK.
+1. If using the Gadgetron for reconstruction, please use a standard Gadgetron installation or Docker container.  The Gadgetron now requires Boost version 1.65 or newer, which is newer than that supplied with GE's latest Orchestra Linux SDK.  Therefore, Gadgetron currently cannot be built using components from GE's Orchestra Linux SDK, as was previously possible.
 
 1. Obtain the GE converter source code:
 
