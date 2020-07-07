@@ -601,7 +601,7 @@ static std::string ge_header_to_xml(GERecon::Legacy::LxDownloadDataPointer lxDat
           // writer.formatElement("nMultiBandSlices", "%d",    procCtrlEPI->ValueStrict<int>("MultibandNumAcquiredSlices"));
           // writer.formatElement("NumberOfShots", "%d",       procCtrlEPI->Value<unsigned int>("NumberOfShots"));
           // writer.formatElement("NumAcqsPerRep", "%d",       procCtrlEPI->Value<int>("NumAcquisitionsPerRepetition"));
-          // writer.formatElement("DataSampleTime", "%f",      processingControl->Value<float>("A2DSampleTime")); // in usec. Found in an example - but seems to be specific to that example
+          // writer.formatElement("DataSampleTime", "%f",      processingControl->Value<float>("A2DSampleTime")); // in usec. only valid if IsSpiral = true
        writer.endElement();
     }
 
