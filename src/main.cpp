@@ -30,7 +30,7 @@ int main (int argc, char *argv[])
     std::string usage = thisProgram + " [options] <" + validInputs + ">";
     std::string config_default = get_ge_tools_home() + "share/ge-tools/config/default.xml";
     std::string stylesheet_default = get_ge_tools_home() + "share/ge-tools/config/default.xsl";
-    std::string library_file_default = get_ge_tools_home() + "lib/libp2i-generic.so";
+    std::string library_file_default = get_ge_tools_home() + "lib/libg2i-generic.so";
     std::string sequence_class_default = "GenericConverter";
 
     po::options_description basic("Basic Options");
