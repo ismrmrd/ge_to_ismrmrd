@@ -49,7 +49,7 @@ Orchestra conversion tools
    to have the ISMRMRD build explicitly refer to Orchestra's Boost libraries, with a command like:
 
    ```bash
-   cmake -D Boost_USE_STATIC_LIBS=ON -D Boost_NO_SYSTEM_PATHS=TRUE -D BOOST_ROOT:PATHNAME=$SDKTOP/3p -D CMAKE_INSTALL_PREFIX=$ISMRMRD_HOME -D HDF5_USE_STATIC_LIBRARIES=yes -D CMAKE_EXE_LINKER_FLAGS="-lpthread -lz -ldl" ..
+   cmake -D CMAKE_INSTALL_PREFIX=$ISMRMRD_HOME -D build4GE=TRUE -D Boost_NO_BOOST_CMAKE=TRUE -D Boost_NO_SYSTEM_PATHS=TRUE ..
    ```
 
    A good discussion of pointing cmake to alternate Boost installations can be found at [this](
