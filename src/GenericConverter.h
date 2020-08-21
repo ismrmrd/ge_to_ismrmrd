@@ -36,6 +36,12 @@ public:
     int                                       getSliceVectors (GERecon::Control::ProcessingControlPointer processingControl,
                                                                unsigned int sliceNumber, geRawDataSliceVectors_t* vecs);
 
+    int                                 rotateVectorOnPatient (unsigned int entry, unsigned int pos,
+                                                               float in[3], float out[3]);
+
+    void                                 makeDirectionVectors (float gwp1[3],     float gwp2[3],      float gwp3[3],
+                                                               float read_dir[3], float phase_dir[3], float slice_dir[3]);
+
 protected:
     virtual int get_view_idx(GERecon::Control::ProcessingControlPointer processingControl,
                              unsigned int view_num, ISMRMRD::EncodingCounters &idx);

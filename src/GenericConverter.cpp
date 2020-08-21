@@ -264,31 +264,29 @@ std::vector<ISMRMRD::Acquisition> GenericConverter::getAcquisitions(GERecon::Sca
                acq.setChannelActive(ch);
             }
 
-                // Patient table off-center
-                // TODO: fix the patient table position
-                acq.patient_table_position()[0] = 0.0;
-                acq.patient_table_position()[1] = 0.0;
-                acq.patient_table_position()[2] = 0.0;
+            // Patient table off-center
+            // TODO: fix the patient table position
+            acq.patient_table_position()[0] = 0.0;
+            acq.patient_table_position()[1] = 0.0;
+            acq.patient_table_position()[2] = 0.0;
 
+            // Slice position and orientation
+            /* Make sure these are correct / accurate */
+            static geRawDataSliceVectors_t sliceVectors;
+            getSliceVectors(processingControl, sliceID, &sliceVectors);
 
-                // Slice position and orientation
-                /* TODO */
-                static geRawDataSliceVectors_t sliceVectors;
-                getSliceVectors(processingControl, sliceID, &sliceVectors);
-
-                /* acq.read_dir()[0] = sliceVectors.read_dir.x;
-                acq.read_dir()[1] = sliceVectors.read_dir.y;
-                acq.read_dir()[2] = sliceVectors.read_dir.z;
-                acq.phase_dir()[0] = sliceVectors.phase_dir.x;
-                acq.phase_dir()[1] = sliceVectors.phase_dir.y;
-                acq.phase_dir()[2] = sliceVectors.phase_dir.z;
-                acq.slice_dir()[0] = sliceVectors.slice_dir.x;
-                acq.slice_dir()[1] = sliceVectors.slice_dir.y;
-                acq.slice_dir()[2] = sliceVectors.slice_dir.z;
-                acq.position()[0] = sliceVectors.center.x;
-                acq.position()[1] = sliceVectors.center.y;
-                acq.position()[2] = sliceVectors.center.z;
-                */
+            acq.read_dir()[0]  = sliceVectors.read_dir.x;
+            acq.read_dir()[1]  = sliceVectors.read_dir.y;
+            acq.read_dir()[2]  = sliceVectors.read_dir.z;
+            acq.phase_dir()[0] = sliceVectors.phase_dir.x;
+            acq.phase_dir()[1] = sliceVectors.phase_dir.y;
+            acq.phase_dir()[2] = sliceVectors.phase_dir.z;
+            acq.slice_dir()[0] = sliceVectors.slice_dir.x;
+            acq.slice_dir()[1] = sliceVectors.slice_dir.y;
+            acq.slice_dir()[2] = sliceVectors.slice_dir.z;
+            acq.position()[0]  = sliceVectors.center.x;
+            acq.position()[1]  = sliceVectors.center.y;
+            acq.position()[2]  = sliceVectors.center.z;
 
             // Set first acquisition flag
             if (idx.kspace_encode_step_1 == 0)
@@ -333,12 +331,8 @@ std::vector<ISMRMRD::Acquisition> GenericConverter::getAcquisitions(GERecon::Sca
 int GenericConverter::getSliceVectors(GERecon::Control::ProcessingControlPointer processingControl,
                                       unsigned int sliceNumber, geRawDataSliceVectors_t* vecs)
 {
-   // assert(vecs);
-
-   // RDB_SLICE_INFO_ENTRY* slice_info;
-
-   float gwp1[3], gwp2[3], gwp3[3];
-   float *gwp1_0, *gwp2_0, *gwp3_0;
+   float gwp1[3],   gwp2[3],   gwp3[3];
+   float gwp1_0[3], gwp2_0[3], gwp3_0[3];
 
    const GERecon::SliceInfoTable sliceTable = processingControl->ValueStrict<GERecon::SliceInfoTable>("SliceTable");
 
@@ -351,55 +345,65 @@ int GenericConverter::getSliceVectors(GERecon::Control::ProcessingControlPointer
    GERecon::SliceCorners sliceCorners = sliceTable.AcquiredSliceCorners(sliceNumber);
 
    // std::cout << "Slice[" << sliceNumber << "] UL   corner is:   " << sliceCorners.UpperLeft()  << std::endl;
-   std::cout << "Slice[" << sliceNumber << "] UL.x corner is:   " << sliceCorners.UpperLeft().X_mm()  << std::endl;
-   std::cout << "Slice[" << sliceNumber << "] UL.y corner is:   " << sliceCorners.UpperLeft().Y_mm()  << std::endl;
-   std::cout << "Slice[" << sliceNumber << "] UL.z corner is:   " << sliceCorners.UpperLeft().Z_mm()  << std::endl;
-
    // std::cout << "Slice[" << sliceNumber << "] UR   corner is:   " << sliceCorners.UpperRight() << std::endl;
-   std::cout << "Slice[" << sliceNumber << "] UR.x corner is:   " << sliceCorners.UpperRight().X_mm() << std::endl;
-   std::cout << "Slice[" << sliceNumber << "] UR.y corner is:   " << sliceCorners.UpperRight().Y_mm() << std::endl;
-   std::cout << "Slice[" << sliceNumber << "] UR.z corner is:   " << sliceCorners.UpperRight().Z_mm() << std::endl;
-
    // std::cout << "Slice[" << sliceNumber << "] LL   corner is:   " << sliceCorners.LowerLeft()  << std::endl;
-   std::cout << "Slice[" << sliceNumber << "] LL.x corner is:   " << sliceCorners.LowerLeft().X_mm()  << std::endl;
-   std::cout << "Slice[" << sliceNumber << "] LL.y corner is:   " << sliceCorners.LowerLeft().Y_mm()  << std::endl;
-   std::cout << "Slice[" << sliceNumber << "] LL.z corner is:   " << sliceCorners.LowerLeft().Z_mm()  << std::endl;
+   // std::cout << "Slice[" << sliceNumber << "] UL.x corner is:   " << sliceCorners.UpperLeft().X_mm()  << std::endl;
+
+   /* TODO - need to make sure these are consistent with how they are treated in rotateVectorOnPatient function */
+   int patientEntry    = processingControl->Value<int>("PatientEntry")    - 1;
+   int patientPosition = processingControl->Value<int>("PatientPosition") - 1;
+
+   // std::cout << "Patient    Entry: " <<  patientEntry   << std::endl;
+   // std::cout << "Patient Position: " << patientPosition << std::endl;
 
    // grab the gw_points from this slice's info entry
    // gwp1_0 = slice_info[sliceNumber].gw_point1;
    // gwp2_0 = slice_info[sliceNumber].gw_point2;
    // gwp3_0 = slice_info[sliceNumber].gw_point3;
 
-   // // rotate each coordinate according to the patient's position
-   // // this also puts the coordinates into DICOM/patient coordinate space
-   // rotateVectorOnPatient(pfile->patient_entry, pfile->patient_pos, gwp1_0, gwp1);
-   // rotateVectorOnPatient(pfile->patient_entry, pfile->patient_pos, gwp2_0, gwp2);
-   // rotateVectorOnPatient(pfile->patient_entry, pfile->patient_pos, gwp3_0, gwp3);
+   gwp1_0[0] = sliceCorners.UpperLeft().X_mm();
+   gwp1_0[1] = sliceCorners.UpperLeft().Y_mm();
+   gwp1_0[2] = sliceCorners.UpperLeft().Z_mm();
+
+   gwp2_0[0] = sliceCorners.UpperRight().X_mm();
+   gwp2_0[1] = sliceCorners.UpperRight().Y_mm();
+   gwp2_0[2] = sliceCorners.UpperRight().Z_mm();
+
+   gwp3_0[0] = sliceCorners.LowerLeft().X_mm();
+   gwp3_0[1] = sliceCorners.LowerLeft().Y_mm();
+   gwp3_0[2] = sliceCorners.LowerLeft().Z_mm();
+
+   // rotate each coordinate according to the patient's position
+   // this also puts the coordinates into DICOM/patient coordinate space
+   rotateVectorOnPatient(patientEntry, patientPosition, gwp1_0, gwp1);
+   rotateVectorOnPatient(patientEntry, patientPosition, gwp2_0, gwp2);
+   rotateVectorOnPatient(patientEntry, patientPosition, gwp3_0, gwp3);
 
    // // Add the Z table offset back to each coordinate
+   // // table_offset_z = image_hdr->ctr_S - (gwp3[2] + gwp2[2]) / 2;
    // gwp1[2] += pfile->table_offset_z;
    // gwp2[2] += pfile->table_offset_z;
    // gwp3[2] += pfile->table_offset_z;
 
-   // // calculate the direction cosines from the corners of the plane
-   // float read_dir[3];
-   // float phase_dir[3];
-   // float slice_dir[3];
-   // makeDirectionVectors(gwp1, gwp2, gwp3, read_dir, phase_dir, slice_dir);
-   // vecs->read_dir.x = read_dir[0];
-   // vecs->read_dir.y = read_dir[1];
-   // vecs->read_dir.z = read_dir[2];
-   // vecs->phase_dir.x = phase_dir[0];
-   // vecs->phase_dir.y = phase_dir[1];
-   // vecs->phase_dir.z = phase_dir[2];
-   // vecs->slice_dir.x = slice_dir[0];
-   // vecs->slice_dir.y = slice_dir[1];
-   // vecs->slice_dir.z = slice_dir[2];
-   // vecs->center.x = (gwp3[0] + gwp2[0]) / 2.0;
-   // vecs->center.y = (gwp3[1] + gwp2[1]) / 2.0;
-   // vecs->center.z = (gwp3[2] + gwp2[2]) / 2.0;
+   // calculate the direction cosines from the corners of the plane
+   float read_dir[3];
+   float phase_dir[3];
+   float slice_dir[3];
+   makeDirectionVectors(gwp1, gwp2, gwp3, read_dir, phase_dir, slice_dir);
+   vecs->read_dir.x  = read_dir[0];
+   vecs->read_dir.y  = read_dir[1];
+   vecs->read_dir.z  = read_dir[2];
+   vecs->phase_dir.x = phase_dir[0];
+   vecs->phase_dir.y = phase_dir[1];
+   vecs->phase_dir.z = phase_dir[2];
+   vecs->slice_dir.x = slice_dir[0];
+   vecs->slice_dir.y = slice_dir[1];
+   vecs->slice_dir.z = slice_dir[2];
+   vecs->center.x    = (gwp3[0] + gwp2[0]) / 2.0;
+   vecs->center.y    = (gwp3[1] + gwp2[1]) / 2.0;
+   vecs->center.z    = (gwp3[2] + gwp2[2]) / 2.0;
 
-   // return E_NO_ERROR;
+   return 0;
 }
 
 
@@ -414,8 +418,8 @@ int GenericConverter::getSliceVectors(GERecon::Control::ProcessingControlPointer
  * @param out rotated direction vector
  * @returns 1 on success, -1 on failure
  */
-int rotateVectorOnPatient(unsigned int entry, unsigned int pos,
-                          float in[3], float out[3])
+int GenericConverter::rotateVectorOnPatient(unsigned int entry, unsigned int pos,
+                                            float in[3], float out[3])
 {
    if (entry > 1) {
       return -1;
@@ -463,8 +467,8 @@ int rotateVectorOnPatient(unsigned int entry, unsigned int pos,
  * @param
  * @return
  */
-void makeDirectionVectors(float gwp1[3],     float gwp2[3],      float gwp3[3],
-                          float read_dir[3], float phase_dir[3], float slice_dir[3])
+void GenericConverter::makeDirectionVectors(float gwp1[3],     float gwp2[3],      float gwp3[3],
+                                            float read_dir[3], float phase_dir[3], float slice_dir[3])
 {
    /****Angulation of acquisition ****/
    /* Calculate rotation matrix */
