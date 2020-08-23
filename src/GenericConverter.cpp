@@ -104,30 +104,7 @@ std::vector<ISMRMRD::Acquisition> GenericConverter::getAcquisitions(GERecon::Leg
                     acq.setChannelActive(ch);
                 }
 
-                // Patient table off-center
-                // TODO: fix the patient table position
-                acq.patient_table_position()[0] = 0.0;
-                acq.patient_table_position()[1] = 0.0;
-                acq.patient_table_position()[2] = 0.0;
-
-                // Slice position and orientation
-                /* TODO
-                static pfile_slice_vectors_t slice_vectors;
-                pfile_get_slice_vectors(pfile, idx.slice, &slice_vectors);
-
-                acq.read_dir()[0] = slice_vectors.read_dir.x;
-                acq.read_dir()[1] = slice_vectors.read_dir.y;
-                acq.read_dir()[2] = slice_vectors.read_dir.z;
-                acq.phase_dir()[0] = slice_vectors.phase_dir.x;
-                acq.phase_dir()[1] = slice_vectors.phase_dir.y;
-                acq.phase_dir()[2] = slice_vectors.phase_dir.z;
-                acq.slice_dir()[0] = slice_vectors.slice_dir.x;
-                acq.slice_dir()[1] = slice_vectors.slice_dir.y;
-                acq.slice_dir()[2] = slice_vectors.slice_dir.z;
-                acq.position()[0] = slice_vectors.center.x;
-                acq.position()[1] = slice_vectors.center.y;
-                acq.position()[2] = slice_vectors.center.z;
-                */
+                setISMRMRDSliceVectors(processingControl, acq);
 
                 // Set first acquisition flag
                 if (idx.kspace_encode_step_1 == 0)
@@ -264,29 +241,7 @@ std::vector<ISMRMRD::Acquisition> GenericConverter::getAcquisitions(GERecon::Sca
                acq.setChannelActive(ch);
             }
 
-            // Patient table off-center
-            // TODO: fix the patient table position
-            acq.patient_table_position()[0] = 0.0;
-            acq.patient_table_position()[1] = 0.0;
-            acq.patient_table_position()[2] = 0.0;
-
-            // Slice position and orientation
-            /* Make sure these are correct / accurate */
-            static geRawDataSliceVectors_t sliceVectors;
-            getSliceVectors(processingControl, sliceID, &sliceVectors);
-
-            acq.read_dir()[0]  = sliceVectors.read_dir.x;
-            acq.read_dir()[1]  = sliceVectors.read_dir.y;
-            acq.read_dir()[2]  = sliceVectors.read_dir.z;
-            acq.phase_dir()[0] = sliceVectors.phase_dir.x;
-            acq.phase_dir()[1] = sliceVectors.phase_dir.y;
-            acq.phase_dir()[2] = sliceVectors.phase_dir.z;
-            acq.slice_dir()[0] = sliceVectors.slice_dir.x;
-            acq.slice_dir()[1] = sliceVectors.slice_dir.y;
-            acq.slice_dir()[2] = sliceVectors.slice_dir.z;
-            acq.position()[0]  = sliceVectors.center.x;
-            acq.position()[1]  = sliceVectors.center.y;
-            acq.position()[2]  = sliceVectors.center.z;
+            setISMRMRDSliceVectors(processingControl, acq);
 
             // Set first acquisition flag
             if (idx.kspace_encode_step_1 == 0)
@@ -324,6 +279,37 @@ std::vector<ISMRMRD::Acquisition> GenericConverter::getAcquisitions(GERecon::Sca
    }
 
    return acqs;
+}
+
+
+
+int GenericConverter::setISMRMRDSliceVectors(GERecon::Control::ProcessingControlPointer processingControl,
+                                             ISMRMRD::Acquisition& acq)
+{
+   static geRawDataSliceVectors_t sliceVectors;
+
+   // Patient table off-center
+   // TODO: fix the patient table position
+   acq.patient_table_position()[0] = 0.0;
+   acq.patient_table_position()[1] = 0.0;
+   acq.patient_table_position()[2] = 0.0;
+
+   getSliceVectors(processingControl, acq.idx().slice, &sliceVectors);
+
+   acq.read_dir()[0]  = sliceVectors.read_dir.x;
+   acq.read_dir()[1]  = sliceVectors.read_dir.y;
+   acq.read_dir()[2]  = sliceVectors.read_dir.z;
+   acq.phase_dir()[0] = sliceVectors.phase_dir.x;
+   acq.phase_dir()[1] = sliceVectors.phase_dir.y;
+   acq.phase_dir()[2] = sliceVectors.phase_dir.z;
+   acq.slice_dir()[0] = sliceVectors.slice_dir.x;
+   acq.slice_dir()[1] = sliceVectors.slice_dir.y;
+   acq.slice_dir()[2] = sliceVectors.slice_dir.z;
+   acq.position()[0]  = sliceVectors.center.x;
+   acq.position()[1]  = sliceVectors.center.y;
+   acq.position()[2]  = sliceVectors.center.z;
+
+   return 0;
 }
 
 
@@ -451,6 +437,8 @@ int GenericConverter::rotateVectorOnPatient(unsigned int entry, unsigned int pos
 
    return 1;
 }
+
+
 
 /**
  * Calculates read, phase, and slice direction vectors from three corners of plane

@@ -33,6 +33,10 @@ public:
     virtual std::vector<ISMRMRD::Acquisition> getAcquisitions (GERecon::ScanArchivePointer &scanArchivePtr,
                                                                unsigned int view_num);
 
+
+    int                                setISMRMRDSliceVectors (GERecon::Control::ProcessingControlPointer processingControl,
+                                                               ISMRMRD::Acquisition& acq);
+
     int                                       getSliceVectors (GERecon::Control::ProcessingControlPointer processingControl,
                                                                unsigned int sliceNumber, geRawDataSliceVectors_t* vecs);
 
