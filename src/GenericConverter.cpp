@@ -334,6 +334,14 @@ int GenericConverter::getSliceVectors(GERecon::Control::ProcessingControlPointer
    // std::cout << "Slice[" << sliceNumber << "] UR   corner is:   " << sliceCorners.UpperRight() << std::endl;
    // std::cout << "Slice[" << sliceNumber << "] LL   corner is:   " << sliceCorners.LowerLeft()  << std::endl;
    // std::cout << "Slice[" << sliceNumber << "] UL.x corner is:   " << sliceCorners.UpperLeft().X_mm()  << std::endl;
+   // std::cout << "Slice[" << sliceNumber << "] UL.y corner is:   " << sliceCorners.UpperLeft().Y_mm()  << std::endl;
+   // std::cout << "Slice[" << sliceNumber << "] UL.z corner is:   " << sliceCorners.UpperLeft().Z_mm()  << std::endl;
+   // std::cout << "Slice[" << sliceNumber << "] UR.x corner is:   " << sliceCorners.UpperRight().X_mm()  << std::endl;
+   // std::cout << "Slice[" << sliceNumber << "] UR.y corner is:   " << sliceCorners.UpperRight().Y_mm()  << std::endl;
+   // std::cout << "Slice[" << sliceNumber << "] UR.z corner is:   " << sliceCorners.UpperRight().Z_mm()  << std::endl;
+   // std::cout << "Slice[" << sliceNumber << "] LL.x corner is:   " << sliceCorners.LowerLeft().X_mm()  << std::endl;
+   // std::cout << "Slice[" << sliceNumber << "] LL.y corner is:   " << sliceCorners.LowerLeft().Y_mm()  << std::endl;
+   // std::cout << "Slice[" << sliceNumber << "] LL.z corner is:   " << sliceCorners.LowerLeft().Z_mm()  << std::endl;
 
    /* TODO - need to make sure these are consistent with how they are treated in rotateVectorOnPatient function */
    int patientEntry    = processingControl->Value<int>("PatientEntry")    - 1;
@@ -407,6 +415,9 @@ int GenericConverter::getSliceVectors(GERecon::Control::ProcessingControlPointer
 int GenericConverter::rotateVectorOnPatient(unsigned int entry, unsigned int pos,
                                             float in[3], float out[3])
 {
+   std::cout << "Patient entry: " << entry << "; 0 == Head first, 1 == feet first" << std::endl;
+   std::cout << "Patient position: " << pos << "; 0 == Supine, 1 == Prone, 2 == Left Decub, 3 == Right Decub" << std::endl;
+
    if (entry > 1) {
       return -1;
    }
