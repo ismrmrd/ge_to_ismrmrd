@@ -205,6 +205,8 @@ std::vector<ISMRMRD::Acquisition> NIHepiConverter::getAcquisitions(GERecon::Scan
                }
                acq.setChannelActive(channelID);
             }
+
+            setISMRMRDSliceVectors(processingControl, acq);
          }
          dataIndex += totalViews;
       }
