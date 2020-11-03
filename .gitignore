@@ -34,3 +34,6 @@ tags
 Doxyfile.Orchestra
 sampleData/notebooks/.ipynb_checkpoints/
 
+# Test/prototyping data NOT to be shipped with example raw files.
+prototypingData*/
+
