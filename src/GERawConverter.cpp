@@ -455,13 +455,13 @@ static std::string ge_header_to_xml(GERecon::Legacy::LxDownloadDataPointer lxDat
 
     writer.formatElement("AcquiredXRes", "%d",     processingControl->Value<int>("AcquiredXRes"));
     writer.formatElement("AcquiredYRes", "%d",     processingControl->Value<int>("AcquiredYRes"));
-    std::cout << "In GERawConverter, AcquiredYRes = " << processingControl->Value<int>("AcquiredYRes") << std::endl;
     writer.formatElement("AcquiredZRes", "%d",     processingControl->Value<int>("AcquiredZRes"));
 
     writer.addBooleanElement("EvenEchoFrequencyFlip", processingControl->Value<bool>("EvenEchoFrequencyFlip"));
     writer.addBooleanElement("OddEchoFrequencyFlip",  processingControl->Value<bool>("OddEchoFrequencyFlip"));
     writer.addBooleanElement("EvenEchoPhaseFlip",  processingControl->Value<bool>("EvenEchoPhaseFlip"));
     writer.addBooleanElement("OddEchoPhaseFlip",   processingControl->Value<bool>("OddEchoPhaseFlip"));
+    writer.addBooleanElement("ChoppedData",        processingControl->Value<bool>("ChoppedData"));
     writer.addBooleanElement("HalfEcho",           processingControl->Value<bool>("HalfEcho"));
     writer.formatElement("RawNex", "%u",           processingControl->Value<unsigned int>("RawNex"));
     writer.addBooleanElement("HalfNex",            processingControl->Value<bool>("HalfNex"));
@@ -474,6 +474,10 @@ static std::string ge_header_to_xml(GERecon::Legacy::LxDownloadDataPointer lxDat
     writer.formatElement("seriesPulseSeq",  "%d",  lxData->SeriesPulseSequence());
     writer.formatElement("scanType",        "%s",  lxData->ScanType().c_str());
     writer.formatElement("seriesDscrption", "%s",  lxData->SeriesDescription().c_str());
+
+    std::cout << "Coverting series with description: " <<   lxData->SeriesDescription().c_str() << std::endl;
+    std::cout << "Patient entry: "    << processingControl->Value<int>("PatientEntry")    << std::endl;
+    std::cout << "Patient position: " << processingControl->Value<int>("PatientPosition") << std::endl;
 
     writer.formatElement("NumBaselineViews", "%d", processingControl->Value<int>("NumBaselineViews"));
     writer.formatElement("NumVolumes", "%d",       processingControl->Value<int>("NumVolumes"));
@@ -515,6 +519,7 @@ static std::string ge_header_to_xml(GERecon::Legacy::LxDownloadDataPointer lxDat
     auto grayscaleImage = GEDicom::GrayscaleImage(128, 128);
     auto dicomImage = GERecon::Legacy::DicomImage(grayscaleImage, 0, imageCorners, series, *lxData);
     auto imageModule = dicomImage.ImageModule();
+    // auto privateIdentityModule = dicomImage.PrivateIdentityModule();
 
     writer.startElement("Image");
     writer.formatElement("EchoTime", "%s",         imageModule->EchoTime().c_str());
@@ -604,25 +609,6 @@ static std::string ge_header_to_xml(GERecon::Legacy::LxDownloadDataPointer lxDat
           // writer.formatElement("DataSampleTime", "%f",      processingControl->Value<float>("A2DSampleTime")); // in usec. only valid if IsSpiral = true
        writer.endElement();
     }
-
-    // Old fields from headers:
-
-    // TODO: patient_pos field
-
-    // TODO: dfov field
-    // TODO: dfov_rect field
-
-    // TODO: trigger_time field
-
-    // TODO: measurement_uid field
-    // TODO: variable_bandwidth field
-    // TODO: sample_time field
-
-    // TODO: study_iuid field
-    // TODO: series_iuid field
-    // TODO: frame_of_reference_iuid field
-
-    // TODO: referenced_image_iuids
 
     writer.endDocument();
 
