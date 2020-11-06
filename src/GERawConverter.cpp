@@ -561,6 +561,8 @@ static std::string ge_header_to_xml(GERecon::Legacy::LxDownloadDataPointer lxDat
     auto privateAcquisitionModule = dicomImage.PrivateAcquisitionModule();
     writer.formatElement("SecondEcho", "%s",       privateAcquisitionModule->SecondEcho().c_str());
 
+    // std::cout << "Table position: " << privateAcquisitionModule->TableDelta() << std::endl; // always seems to be 0.000 - so not sure if useful
+
     writer.endElement();
 
     writer.startElement("UserVariables");
