@@ -190,8 +190,11 @@ std::vector<ISMRMRD::Acquisition> GenericConverter::getAcquisitions(GERecon::Sca
       {
          GERecon::Acquisition::ProgrammableControlPacket const packetContents = thisPacket->Control().Packet().As<GERecon::Acquisition::ProgrammableControlPacket>();
 
+         const GERecon::SliceInfoTable sliceTable = processingControl->ValueStrict<GERecon::SliceInfoTable>("SliceTable");
+
          viewID  = GERecon::Acquisition::GetPacketValue(packetContents.viewNumH,  packetContents.viewNumL);
-         sliceID = GERecon::Acquisition::GetPacketValue(packetContents.sliceNumH, packetContents.sliceNumL);
+         // Convert acquired slice index to spatial / geometric slice index
+         sliceID = sliceTable.GeometricSliceNumber(GERecon::Acquisition::GetPacketValue(packetContents.sliceNumH, packetContents.sliceNumL));
 
          if ((viewID < 1) || (viewID > nPhases))
          {
@@ -215,7 +218,7 @@ std::vector<ISMRMRD::Acquisition> GenericConverter::getAcquisitions(GERecon::Sca
 
             // Initialize the encoding counters for this acquisition.
             ISMRMRD::EncodingCounters idx;
-            get_view_idx(processingControl, 0, idx);
+            get_view_idx(processingControl, viewID, idx);
 
             idx.slice                  = sliceID;
             idx.contrast               = packetContents.echoNum;
@@ -343,17 +346,54 @@ int GenericConverter::getSliceVectors(GERecon::Control::ProcessingControlPointer
    // std::cout << "Slice[" << sliceNumber << "] LL.y corner is:   " << sliceCorners.LowerLeft().Y_mm()  << std::endl;
    // std::cout << "Slice[" << sliceNumber << "] LL.z corner is:   " << sliceCorners.LowerLeft().Z_mm()  << std::endl;
 
-   /* TODO - need to make sure these are consistent with how they are treated in rotateVectorOnPatient function */
-   int patientEntry    = processingControl->Value<int>("PatientEntry")    - 1;
-   int patientPosition = processingControl->Value<int>("PatientPosition") - 1;
+   /* TODO - need to make sure these are consistent with how they are treated in rotateVectorOnPatient function.
+    *
+    * These did not seem to be consisent.  'patientEntry' seemed okay though looked like it could get much more
+    * complicated.  'patientPosition' required more checking.
+    *
 
-   // std::cout << "Patient    Entry: " <<  patientEntry   << std::endl;
-   // std::cout << "Patient Position: " << patientPosition << std::endl;
+    * int patientEntry    = processingControl->Value<int>("PatientEntry")    - 1;
+    * int patientPosition = processingControl->Value<int>("PatientPosition") - 1;
 
-   // grab the gw_points from this slice's info entry
-   // gwp1_0 = slice_info[sliceNumber].gw_point1;
-   // gwp2_0 = slice_info[sliceNumber].gw_point2;
-   // gwp3_0 = slice_info[sliceNumber].gw_point3;
+    * grab the gw_points from this slice's info entry
+    * gwp1_0 = slice_info[sliceNumber].gw_point1;
+    * gwp2_0 = slice_info[sliceNumber].gw_point2;
+    * gwp3_0 = slice_info[sliceNumber].gw_point3;
+
+    */
+
+   int patientEntry, patientPosition;
+
+   // std::cout << "Patient entry: "    << processingControl->Value<int>("PatientEntry")    << std::endl;
+   // std::cout << "Patient position: " << processingControl->Value<int>("PatientPosition") << std::endl;
+
+   switch (processingControl->Value<int>("PatientEntry"))
+   {
+      case 2 :
+         patientEntry = 1;      /* Feet first */
+         break;
+
+      default :
+         patientEntry = 0;      /* Head first */
+   }
+
+   switch (processingControl->Value<int>("PatientPosition"))
+   {
+      case 2 :
+         patientPosition = 1;   /* Prone */
+         break;
+
+      case 4 :
+         patientPosition = 2;   /* Left Decubitus */
+         break;
+
+      case 8 :
+         patientPosition = 3;   /* Right Decubitus */
+         break;
+
+      default :
+         patientPosition = 0;   /* Supine */
+   }
 
    gwp1_0[0] = sliceCorners.UpperLeft().X_mm();
    gwp1_0[1] = sliceCorners.UpperLeft().Y_mm();
@@ -415,9 +455,6 @@ int GenericConverter::getSliceVectors(GERecon::Control::ProcessingControlPointer
 int GenericConverter::rotateVectorOnPatient(unsigned int entry, unsigned int pos,
                                             float in[3], float out[3])
 {
-   std::cout << "Patient entry: " << entry << "; 0 == Head first, 1 == feet first" << std::endl;
-   std::cout << "Patient position: " << pos << "; 0 == Supine, 1 == Prone, 2 == Left Decub, 3 == Right Decub" << std::endl;
-
    if (entry > 1) {
       return -1;
    }
