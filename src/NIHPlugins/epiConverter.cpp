@@ -94,7 +94,10 @@ std::vector<ISMRMRD::Acquisition> NIHepiConverter::getAcquisitions(GERecon::Scan
          // For EPI scans, packets are now HyperFrameControl type
          GERecon::Acquisition::HyperFrameControlPacket const packetContents = thisPacket->Control().Packet().As<GERecon::Acquisition::HyperFrameControlPacket>();
 
-         int sliceID  =           GERecon::Acquisition::GetPacketValue(packetContents.sliceNumH, packetContents.sliceNumL);
+         const GERecon::SliceInfoTable sliceTable = processingControl->ValueStrict<GERecon::SliceInfoTable>("SliceTable");
+
+         // Convert acquired slice index to spatial / geometric slice index
+         int sliceID  = sliceTable.GeometricSliceNumber(GERecon::Acquisition::GetPacketValue(packetContents.sliceNumH, packetContents.sliceNumL));
          int viewSkip = static_cast<short>(Acquisition::GetPacketValue(packetContents.viewSkipH, packetContents.viewSkipL));
 
          acqType = GERecon::Acquisition::ImageFrame;
