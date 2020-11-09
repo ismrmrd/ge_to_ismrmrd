@@ -96,7 +96,6 @@ std::vector<ISMRMRD::Acquisition> NIHepiConverter::getAcquisitions(GERecon::Scan
 
          const GERecon::SliceInfoTable sliceTable = processingControl->ValueStrict<GERecon::SliceInfoTable>("SliceTable");
 
-         // Convert acquired slice index to spatial / geometric slice index
          int viewSkip = static_cast<short>(Acquisition::GetPacketValue(packetContents.viewSkipH, packetContents.viewSkipL));
 
          acqType = GERecon::Acquisition::ImageFrame;
