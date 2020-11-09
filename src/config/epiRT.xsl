@@ -165,7 +165,7 @@
          <encodedSpace>
             <matrixSize>
                <x><xsl:value-of select="Header/TransformXRes"/></x>
-               <y><xsl:value-of select="Header/AcquiredYRes"/></y>
+               <y><xsl:value-of select="Header/epiParameters/AcquiredYRes"/></y>
                <xsl:choose>
                   <xsl:when test="(Header/Is3DAcquisition)='true'">
                      <z><xsl:value-of select="Header/AcquiredZRes"/></z>
@@ -205,8 +205,8 @@
          <encodingLimits>
             <kspace_encoding_step_1>
                <minimum>0</minimum>
-               <maximum><xsl:value-of select="Header/AcquiredYRes - 1"/></maximum>
-               <center><xsl:value-of select="floor(Header/AcquiredYRes div 2)"/> </center>
+               <maximum><xsl:value-of select="Header/epiParameters/AcquiredYRes - 1"/></maximum>
+               <center><xsl:value-of select="floor(Header/epiParameters/AcquiredYRes div 2)"/> </center>
             </kspace_encoding_step_1>
             <kspace_encoding_step_2>
                <minimum>0</minimum>

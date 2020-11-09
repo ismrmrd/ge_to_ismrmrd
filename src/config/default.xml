@@ -5,7 +5,7 @@
 
     <sequenceMapping>
         <psdname>fgre</psdname>
-        <libraryPath>libp2i-generic</libraryPath>
+        <libraryPath>libg2i-generic</libraryPath>
         <className>GenericConverter</className>
         <stylesheet>default.xsl</stylesheet>
         <reconConfigName>default.xml</reconConfigName>
@@ -13,7 +13,7 @@
 
     <sequenceMapping>
         <psdname>memp</psdname>
-        <libraryPath>libp2i-generic</libraryPath>
+        <libraryPath>libg2i-generic</libraryPath>
         <className>GenericConverter</className>
         <stylesheet>default.xsl</stylesheet>
         <reconConfigName>default.xml</reconConfigName>

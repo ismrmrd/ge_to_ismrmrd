@@ -77,6 +77,10 @@ GERawConverter::GERawConverter(const std::string& rawFilePath, bool logging)
 
         rawObjectType_ = PFILE_RAW_TYPE;
     }
+
+    // Testing dumping of raw file header as XML.
+    // processingControl_->SaveAsXml("rawHeader.xml");  // As of Orchestra 1.8-1, this is causing a crash, with
+                                                     // an incomplete file written.
 }
 
 /**
@@ -457,6 +461,7 @@ static std::string ge_header_to_xml(GERecon::Legacy::LxDownloadDataPointer lxDat
     writer.addBooleanElement("OddEchoFrequencyFlip",  processingControl->Value<bool>("OddEchoFrequencyFlip"));
     writer.addBooleanElement("EvenEchoPhaseFlip",  processingControl->Value<bool>("EvenEchoPhaseFlip"));
     writer.addBooleanElement("OddEchoPhaseFlip",   processingControl->Value<bool>("OddEchoPhaseFlip"));
+    writer.addBooleanElement("ChoppedData",        processingControl->Value<bool>("ChoppedData"));
     writer.addBooleanElement("HalfEcho",           processingControl->Value<bool>("HalfEcho"));
     writer.formatElement("RawNex", "%u",           processingControl->Value<unsigned int>("RawNex"));
     writer.addBooleanElement("HalfNex",            processingControl->Value<bool>("HalfNex"));
@@ -469,6 +474,10 @@ static std::string ge_header_to_xml(GERecon::Legacy::LxDownloadDataPointer lxDat
     writer.formatElement("seriesPulseSeq",  "%d",  lxData->SeriesPulseSequence());
     writer.formatElement("scanType",        "%s",  lxData->ScanType().c_str());
     writer.formatElement("seriesDscrption", "%s",  lxData->SeriesDescription().c_str());
+
+    std::cout << "Coverting series with description: " <<   lxData->SeriesDescription().c_str() << std::endl;
+    std::cout << "Patient entry: "    << processingControl->Value<int>("PatientEntry")    << std::endl;
+    std::cout << "Patient position: " << processingControl->Value<int>("PatientPosition") << std::endl;
 
     writer.formatElement("NumBaselineViews", "%d", processingControl->Value<int>("NumBaselineViews"));
     writer.formatElement("NumVolumes", "%d",       processingControl->Value<int>("NumVolumes"));
@@ -510,6 +519,7 @@ static std::string ge_header_to_xml(GERecon::Legacy::LxDownloadDataPointer lxDat
     auto grayscaleImage = GEDicom::GrayscaleImage(128, 128);
     auto dicomImage = GERecon::Legacy::DicomImage(grayscaleImage, 0, imageCorners, series, *lxData);
     auto imageModule = dicomImage.ImageModule();
+    // auto privateIdentityModule = dicomImage.PrivateIdentityModule();
 
     writer.startElement("Image");
     writer.formatElement("EchoTime", "%s",         imageModule->EchoTime().c_str());
@@ -551,6 +561,8 @@ static std::string ge_header_to_xml(GERecon::Legacy::LxDownloadDataPointer lxDat
     auto privateAcquisitionModule = dicomImage.PrivateAcquisitionModule();
     writer.formatElement("SecondEcho", "%s",       privateAcquisitionModule->SecondEcho().c_str());
 
+    // std::cout << "Table position: " << privateAcquisitionModule->TableDelta() << std::endl; // always seems to be 0.000 - so not sure if useful
+
     writer.endElement();
 
     writer.startElement("UserVariables");
@@ -587,35 +599,18 @@ static std::string ge_header_to_xml(GERecon::Legacy::LxDownloadDataPointer lxDat
         writer.startElement("epiParameters");
           writer.addBooleanElement("isEpiRefScanIntegrated",   procCtrlEPI->Value<bool>("IntegratedReferenceScan"));
           writer.addBooleanElement("MultibandEnabled",         procCtrlEPI->ValueStrict<bool>("MultibandEnabled"));
-          writer.formatElement("ExtraFramesTop", "%d",      procCtrlEPI->Value<int>("ExtraFramesTop"));
-          writer.formatElement("ExtraFramesBottom", "%d",   procCtrlEPI->Value<int>("ExtraFramesBottom"));
+          writer.formatElement("ExtraFramesTop", "%d",         procCtrlEPI->Value<int>("ExtraFramesTop"));
+          writer.formatElement("AcquiredYRes", "%d",           procCtrlEPI->Value<int>("AcquiredYRes"));
+          std::cout << "In epiConverter, AcquiredYRes = " <<   procCtrlEPI->Value<int>("AcquiredYRes") << std::endl;
+          writer.formatElement("ExtraFramesBottom", "%d",      procCtrlEPI->Value<int>("ExtraFramesBottom"));
           // writer.formatElement("NumRefViews", "%d",         procCtrlEPI->Value<int>("NumRefViews")); // not found at run time up to Orchestra 1.7.1
-          writer.formatElement("NumRefViews", "%d",        (procCtrlEPI->Value<int>("ExtraFramesTop") + procCtrlEPI->Value<int>("ExtraFramesBottom")));
+          writer.formatElement("NumRefViews", "%d",           (procCtrlEPI->Value<int>("ExtraFramesTop") + procCtrlEPI->Value<int>("ExtraFramesBottom")));
           // writer.formatElement("nMultiBandSlices", "%d",    procCtrlEPI->ValueStrict<int>("MultibandNumAcquiredSlices"));
           // writer.formatElement("NumberOfShots", "%d",       procCtrlEPI->Value<unsigned int>("NumberOfShots"));
           // writer.formatElement("NumAcqsPerRep", "%d",       procCtrlEPI->Value<int>("NumAcquisitionsPerRepetition"));
-          // writer.formatElement("DataSampleTime", "%f",      processingControl->Value<float>("A2DSampleTime")); // in usec. Found in an example - but seems to be specific to that example
+          // writer.formatElement("DataSampleTime", "%f",      processingControl->Value<float>("A2DSampleTime")); // in usec. only valid if IsSpiral = true
        writer.endElement();
     }
-
-    // Old fields from headers:
-
-    // TODO: patient_pos field
-
-    // TODO: dfov field
-    // TODO: dfov_rect field
-
-    // TODO: trigger_time field
-
-    // TODO: measurement_uid field
-    // TODO: variable_bandwidth field
-    // TODO: sample_time field
-
-    // TODO: study_iuid field
-    // TODO: series_iuid field
-    // TODO: frame_of_reference_iuid field
-
-    // TODO: referenced_image_iuids
 
     writer.endDocument();
 

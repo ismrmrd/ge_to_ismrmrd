@@ -58,6 +58,32 @@ std::vector<ISMRMRD::Acquisition> NIHepiConverter::getAcquisitions(GERecon::Scan
    int dataIndex = 0;
    std::vector<ISMRMRD::Acquisition> acqs;
 
+   Range refViewsRange;
+   int   refViewsStart, refViewsEnd;
+
+   if (nRefViews > 0)
+   {
+      if (topViews > 0)
+      {
+         refViewsStart = 0;
+         refViewsEnd   = topViews - 1;
+      }
+      else if (bottomViews > 0)
+      {
+         refViewsStart = yAcq;
+         refViewsEnd   = yAcq + bottomViews - 1;
+      }
+      else
+      {
+         refViewsStart = 0;
+         refViewsEnd   = 0;
+      }
+      refViewsRange = Range (refViewsStart, refViewsEnd);
+
+      std::cout << "Reference views range: " << refViewsRange << std::endl;
+      std::cout << "yAcq: " << yAcq << ", topViews: " << topViews << ", bottomViews: " << bottomViews << std::endl;
+   }
+
    for (int packetCount=0; packetCount < packetQuantity; packetCount++)
    {
       GERecon::Acquisition::FrameControlPointer const thisPacket = archiveStoragePointer->NextFrameControl();
@@ -68,7 +94,10 @@ std::vector<ISMRMRD::Acquisition> NIHepiConverter::getAcquisitions(GERecon::Scan
          // For EPI scans, packets are now HyperFrameControl type
          GERecon::Acquisition::HyperFrameControlPacket const packetContents = thisPacket->Control().Packet().As<GERecon::Acquisition::HyperFrameControlPacket>();
 
-         int sliceID  =           GERecon::Acquisition::GetPacketValue(packetContents.sliceNumH, packetContents.sliceNumL);
+         const GERecon::SliceInfoTable sliceTable = processingControl->ValueStrict<GERecon::SliceInfoTable>("SliceTable");
+
+         // Convert acquired slice index to spatial / geometric slice index
+         int sliceID  = sliceTable.GeometricSliceNumber(GERecon::Acquisition::GetPacketValue(packetContents.sliceNumH, packetContents.sliceNumL));
          int viewSkip = static_cast<short>(Acquisition::GetPacketValue(packetContents.viewSkipH, packetContents.viewSkipL));
 
          acqType = GERecon::Acquisition::ImageFrame;
@@ -112,22 +141,21 @@ std::vector<ISMRMRD::Acquisition> NIHepiConverter::getAcquisitions(GERecon::Scan
 
          for (int view = 0; view < totalViews; ++view)
          {
-
             // Figure out where to put this view (i.e. effectively
             // re-sorting the views in the packet so that the reference
             // data comes first.
 
             int acq_index = 0;
 
-            if (view < topViews || view >= topViews + yAcq) {
-             // This view contains reference scan data
-             pe1_index = yAcq/2;
-             acq_index = dataIndex + ref_count++;
+            if ((nRefViews > 0) && (view >= refViewsStart) && (view <= refViewsEnd)) {
+               // This view contains reference scan data
+               pe1_index = yAcq/2;
+               acq_index = dataIndex + ref_count++;
             }
             else {
-              // This view constains (k-space) image data
-              pe1_index = view - topViews;
-              acq_index = dataIndex + nRefViews + pe1_index;
+               // This view constains (k-space) image data
+               pe1_index = view - topViews;
+               acq_index = dataIndex + nRefViews + pe1_index;
             }
 
             // Grab a reference to the acquisition
@@ -163,8 +191,13 @@ std::vector<ISMRMRD::Acquisition> NIHepiConverter::getAcquisitions(GERecon::Scan
                acq.setFlag(ISMRMRD::ISMRMRD_ACQ_LAST_IN_SLICE);
 
             // Label reference scan data
-            if (view < topViews || view >= topViews + yAcq)
+            // if (view < topViews || view >= topViews + yAcq)
+            if ((nRefViews > 0) && (view >= refViewsStart) && (view <= refViewsEnd))
+            {
+               // std::cout << "Setting view: " << view << " as phase correction line." << std::endl;
+
                acq.setFlag(ISMRMRD::ISMRMRD_ACQ_IS_PHASECORR_DATA);
+            }
 
             // Copy view data to ISMRMRD Acq data packet
             for (int channelID = 0 ; channelID < nChannels ; channelID++)
@@ -175,6 +208,8 @@ std::vector<ISMRMRD::Acquisition> NIHepiConverter::getAcquisitions(GERecon::Scan
                }
                acq.setChannelActive(channelID);
             }
+
+            setISMRMRDSliceVectors(processingControl, acq);
          }
          dataIndex += totalViews;
       }

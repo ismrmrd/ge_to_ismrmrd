@@ -26,7 +26,7 @@ Orchestra conversion tools
 1.  Pre-define the location of HDF5 in order to use Orchestra's static HDF5 library:
 
     ```bash
-    export HDF5_ROOT=$SDKTOP/include/recon/3p/Linux/hdf5-1.8.12_dev_linux64
+    export HDF5_ROOT=$SDKTOP/3p
     ```
 
     Any other version of HDF5 on the system can cause conflicts as cmake will find all versions, and
@@ -39,7 +39,7 @@ Orchestra conversion tools
     cd ismrmrd/
     mkdir build
     cd build/
-    cmake -D CMAKE_INSTALL_PREFIX=$ISMRMRD_HOME -D HDF5_USE_STATIC_LIBRARIES=yes -D CMAKE_EXE_LINKER_FLAGS="-lpthread -lz -ldl" ..
+    cmake -D build4GE=ON -D CMAKE_INSTALL_PREFIX=$ISMRMRD_HOME ..
     make install
     cd ../
     ```
@@ -49,8 +49,12 @@ Orchestra conversion tools
    to have the ISMRMRD build explicitly refer to Orchestra's Boost libraries, with a command like:
 
    ```bash
-   cmake -D Boost_INCLUDE_DIR=$SDKTOP/include/recon/3p/Linux/boost_1_55_0_dev_linux64/include/ -D CMAKE_INSTALL_PREFIX=$ISMRMRD_HOME -D HDF5_USE_STATIC_LIBRARIES=yes -D CMAKE_EXE_LINKER_FLAGS="-lpthread -lz -ldl" ..
+   cmake -D CMAKE_INSTALL_PREFIX=$ISMRMRD_HOME -D build4GE=TRUE -D Boost_NO_BOOST_CMAKE=TRUE -D Boost_NO_SYSTEM_PATHS=TRUE ..
    ```
+
+   A good discussion of pointing cmake to alternate Boost installations can be found at [this](
+   https://stackoverflow.com/questions/3016448/how-can-i-get-cmake-to-find-my-alternative-boost-installation)
+   link.
 
    It may also be necessary to force the usage of older ABIs standards for C++.  To accomplish this,
    a switch along the lines of:
@@ -61,25 +65,7 @@ Orchestra conversion tools
 
    will have to be added to the "CMAKE_CXX_FLAGS" option in the project's CMakeLists.txt file.
 
-1. If using the Gadgetron for reconstruction, obtain and configure code similarly, to use the HDF5 supplied with Orchestra:
-
-    ```bash
-    git clone https://github.com/gadgetron/gadgetron.git
-    cd gadgetron/
-    mkdir build
-    cd build/
-    cmake   -D CMAKE_INSTALL_PREFIX=$GADGETRON_HOME   -D HDF5_USE_STATIC_LIBRARIES=yes   -D CMAKE_EXE_LINKER_FLAGS="-lpthread -lz -ldl" ..
-    make install
-    cd ../
-    ```
-
-    On some systems, with multiple versions of gcc, to force Gadgetron to compile with the appropriate
-    version of gcc (since at least version 6 is required), you can be explicit to cmake about the compiler
-    it should use with a command like:
-
-    ```bash
-    cmake   -D CMAKE_C_COMPILER=/usr/bin/gcc-6   -D CMAKE_CXX_COMPILER=/usr/bin/g++-6   -D CMAKE_INSTALL_PREFIX=$GADGETRON_HOME   -D HDF5_USE_STATIC_LIBRARIES=yes   -D CMAKE_EXE_LINKER_FLAGS="-lpthread -lz -ldl" ..
-    ```
+1. If using the Gadgetron for reconstruction, please use a standard Gadgetron installation or Docker container.  The Gadgetron now requires Boost version 1.65 or newer, which is newer than that supplied with GE's latest Orchestra Linux SDK.  Therefore, Gadgetron currently cannot be built using components from GE's Orchestra Linux SDK, as was previously possible.
 
 1. Obtain the GE converter source code:
 
@@ -104,13 +90,13 @@ Orchestra conversion tools
 1. A typical command line to convert the supplied P-file using this library is:
 
    ```bash
-   pfile2ismrmrd -v -l libp2i-generic.so -p GenericConverter -x $GE_TOOLS_HOME/share/ge-tools/config/default.xsl P21504_FSE.7
+   ge2ismrmrd -v -l libg2i-generic.so -p GenericConverter -x $GE_TOOLS_HOME/share/ge-tools/config/default.xsl P21504_FSE.7
    ```
 
 1. If customized conversion libraries are desired, the corresponding command will be:
 
    ```bash
-   pfile2ismrmrd -v -l libp2i-NIH.so -p NIH2dfastConverter -x $GE_TOOLS_HOME/share/ge-tools/config/default.xsl P21504_FSE.7
+   ge2ismrmrd -v -l libg2i-NIH.so -p NIH2dfastConverter -x $GE_TOOLS_HOME/share/ge-tools/config/default.xsl P21504_FSE.7
    ```
 
    The source code that enables this example is included with these tools. This example is a straightforward
@@ -119,7 +105,7 @@ Orchestra conversion tools
 1. Similarly, a typical command line to convert an example ScanArchive file using this library is:
 
    ```bash
-   pfile2ismrmrd -v -l libp2i-generic.so -p GenericConverter -x $GE_TOOLS_HOME/share/ge-tools/config/default.xsl ScanArchive_FSE.h5
+   ge2ismrmrd -v -l libg2i-generic.so -p GenericConverter -x $GE_TOOLS_HOME/share/ge-tools/config/default.xsl ScanArchive_FSE.h5
    ```
 
    Sample raw data files are now in the 'sampleData' directory.

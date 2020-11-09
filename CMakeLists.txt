@@ -27,7 +27,7 @@ if(APPLE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libstdc++")
 endif(APPLE)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -D_GLIBCXX_USE_CXX11_ABI=0")
 
 message(STATUS, "CXX flags are ${CMAKE_CXX_FLAGS}")
 message(STATUS, "Orchestra definitions are ${ORCHESTRA_DEFINITIONS}")
