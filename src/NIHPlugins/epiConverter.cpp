@@ -97,7 +97,6 @@ std::vector<ISMRMRD::Acquisition> NIHepiConverter::getAcquisitions(GERecon::Scan
          const GERecon::SliceInfoTable sliceTable = processingControl->ValueStrict<GERecon::SliceInfoTable>("SliceTable");
 
          // Convert acquired slice index to spatial / geometric slice index
-         int sliceID  = sliceTable.GeometricSliceNumber(GERecon::Acquisition::GetPacketValue(packetContents.sliceNumH, packetContents.sliceNumL));
          int viewSkip = static_cast<short>(Acquisition::GetPacketValue(packetContents.viewSkipH, packetContents.viewSkipL));
 
          acqType = GERecon::Acquisition::ImageFrame;
@@ -169,8 +168,11 @@ std::vector<ISMRMRD::Acquisition> NIHepiConverter::getAcquisitions(GERecon::Scan
             ISMRMRD::EncodingCounters &idx = acq.idx();
 
             idx.kspace_encode_step_1   = pe1_index;
-            idx.slice                  = sliceID;
-            idx.repetition             = (int) (packetCount / numSlices);
+            // Convert acquired slice index to spatial / geometric slice index.  The remainder (i.e. result of '%' operation) of the
+            // packet count and 'AcquisitionsPerRepetition' division gives the number of acquisitions in this passs / repetition.
+            idx.slice                  = sliceTable.GeometricSliceNumber((int) (packetCount % processingControl->Value<int>("NumAcquisitionsPerRepetition")),
+                                                                         GERecon::Acquisition::GetPacketValue(packetContents.sliceNumH, packetContents.sliceNumL));
+            idx.repetition             = (int) (packetCount / processingControl->Value<int>("NumAcquisitionsPerRepetition"));
 
             // acq.measurement_uid() = pfile->RunNumber();
             acq.scan_counter()         = dataIndex + view;
