@@ -4,9 +4,6 @@
 // Boost
 #include <boost/program_options.hpp>
 
-// Orchestra
-#include <System/Utilities/ProgramOptions.h>
-
 // ISMRMRD
 #include "ismrmrd/ismrmrd.h"
 #include "ismrmrd/dataset.h"
@@ -20,9 +17,6 @@ namespace po = boost::program_options;
 
 int main (int argc, char *argv[])
 {
-    const GESystem::ProgramOptions commandLineOptions;
-    commandLineOptions.SetupCommandLine(argc, argv);
-
     std::string configfile, libpath, classname, stylesheet, rawFile, outfile;
 
     std::string thisProgram = argv[0];
@@ -44,8 +38,6 @@ int main (int argc, char *argv[])
         ("output,o", po::value<std::string>(&outfile)->default_value("testdata.h5"), "output HDF5 file")
         ("string,s", "only print the HDF5 XML header")
         ;
-
-    commandLineOptions.AddOptions(basic);
 
     po::options_description input("Input Options");
     input.add_options()
