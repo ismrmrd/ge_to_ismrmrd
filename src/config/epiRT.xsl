@@ -230,8 +230,8 @@
             </phase>
             <repetition>
                <minimum>0</minimum>
-               <maximum><xsl:value-of select="Header/RepetitionCount - 1"/></maximum>
-               <center><xsl:value-of select="floor(Header/RepetitionCount div 2)"/></center>
+               <maximum><xsl:value-of select="Header/NumVolumes - 1"/></maximum>
+               <center><xsl:value-of select="floor(Header/NumVolumes div 2)"/></center>
             </repetition>
             <segment>
                <minimum>0</minimum>
@@ -240,8 +240,8 @@
             </segment>
             <contrast>
                <minimum>0</minimum>
-               <maximum><xsl:value-of select="Header/EchoCount - 1"/></maximum>
-               <center><xsl:value-of select="floor(Header/EchoCount div 2)"/></center>
+               <maximum><xsl:value-of select="Header/NumEchoes - 1"/></maximum>
+               <center><xsl:value-of select="floor(Header/NumEchoes div 2)"/></center>
             </contrast>
             <average>
                <minimum>0</minimum>

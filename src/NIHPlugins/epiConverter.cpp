@@ -47,10 +47,10 @@ std::vector<ISMRMRD::Acquisition> NIHepiConverter::getAcquisitions(GERecon::Scan
    bool isEpiRefScanIntegrated = processingControl->Value<bool>("IntegratedReferenceScan");
    bool     isMultiBandEnabled = processingControl->Value<bool>("MultibandEnabled");
  
+   // Commented out for now, as these don't seem to hold necessary values for EPI.
    // int                nVolumes = processingControl->Value<int>("NumAcquisitions");
    // int      nAcqsPerRepetition = processingControl->Value<int>("NumAcquisitionsPerRepetition");
    // float         acqSampleTime = processingControl->Value<float>("A2DSampleTime"); // does not exist in the Epi::LxControlSource object
-   int                nVolumes = packetQuantity / numSlices ; // Since each packet should hold 1 slice worth of acquistions, for EPI
 
    const RowFlipParametersPointer rowFlipper = boost::make_shared<RowFlipParameters>(yAcq + nRefViews);
    RowFlipPlugin rowFlipPlugin(rowFlipper, *processingControl);
@@ -167,11 +167,8 @@ std::vector<ISMRMRD::Acquisition> NIHepiConverter::getAcquisitions(GERecon::Scan
             ISMRMRD::EncodingCounters &idx = acq.idx();
 
             idx.kspace_encode_step_1   = pe1_index;
-            // Convert acquired slice index to spatial / geometric slice index.  The remainder (i.e. result of '%' operation) of the
-            // packet count and 'AcquisitionsPerRepetition' division gives the number of acquisitions in this passs / repetition.
-            idx.slice                  = sliceTable.GeometricSliceNumber((int) (packetCount % processingControl->Value<int>("NumAcquisitionsPerRepetition")),
-                                                                         GERecon::Acquisition::GetPacketValue(packetContents.sliceNumH, packetContents.sliceNumL));
-            idx.repetition             = (int) (packetCount / processingControl->Value<int>("NumAcquisitionsPerRepetition"));
+            idx.slice                  = GERecon::Acquisition::GetPacketValue(packetContents.sliceNumH, packetContents.sliceNumL);
+            idx.repetition             = (int) (dataIndex / (numSlices * totalViews));
 
             // acq.measurement_uid() = pfile->RunNumber();
             acq.scan_counter()         = dataIndex + view;
