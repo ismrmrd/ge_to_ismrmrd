@@ -167,8 +167,10 @@ std::vector<ISMRMRD::Acquisition> NIHepiConverter::getAcquisitions(GERecon::Scan
             ISMRMRD::EncodingCounters &idx = acq.idx();
 
             idx.kspace_encode_step_1   = pe1_index;
-            idx.slice                  = GERecon::Acquisition::GetPacketValue(packetContents.sliceNumH, packetContents.sliceNumL);
+            idx.slice                  = sliceTable.GeometricSliceNumber(GERecon::Acquisition::GetPacketValue(packetContents.sliceNumH,
+                                                                                                              packetContents.sliceNumL));
             idx.repetition             = (int) (dataIndex / (numSlices * totalViews));
+            idx.contrast               = packetContents.echoNum;
 
             // acq.measurement_uid() = pfile->RunNumber();
             acq.scan_counter()         = dataIndex + view;
