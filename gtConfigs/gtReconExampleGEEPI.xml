@@ -1,5 +1,5 @@
 
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <gadgetronStreamConfiguration xsi:schemaLocation="http://gadgetron.sf.net/gadgetron gadgetron.xsd"
         xmlns="http://gadgetron.sf.net/gadgetron"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
@@ -21,12 +21,6 @@
         <dll>gadgetron_dicom</dll>
         <classname>DicomImageWriter</classname>
     </writer>
-
-    <!-- gadget>
-        <name>RemoveROOversampling</name>
-        <dll>gadgetron_mricore</dll>
-        <classname>RemoveROOversamplingGadget</classname>
-    </gadget -->
 
     <gadget>
         <name>ReconX</name>
@@ -108,17 +102,17 @@
         <classname>AutoScaleGadget</classname>
     </gadget>
 
-    <gadget>
+    <!-- gadget>
       <name>ImageFinish</name>
       <dll>gadgetron_mricore</dll>
       <classname>ImageFinishGadget</classname>
-    </gadget>
+    </gadget -->
 
-    <!-- gadget>
+    <gadget>
         <name>DicomFinish</name>
         <dll>gadgetron_dicom</dll>
         <classname>DicomFinishGadget</classname>
-    </gadget -->
+    </gadget>
 
 </gadgetronStreamConfiguration>
 
