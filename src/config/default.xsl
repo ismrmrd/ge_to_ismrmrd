@@ -93,6 +93,7 @@
         <receiverChannels><xsl:value-of select="Header/ChannelCount"/></receiverChannels>
         <institutionName><xsl:value-of select="Header/Equipment/Institution"/></institutionName>
         <stationName><xsl:value-of select="Header/Equipment/Station"/></stationName>
+        <deviceID><xsl:value-of select="Header/Equipment/DeviceSerialNumber"/></deviceID>
       </acquisitionSystemInformation>
 
       <experimentalConditions>
