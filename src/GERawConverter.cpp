@@ -493,7 +493,7 @@ static std::string ge_header_to_xml(GERecon::Legacy::LxDownloadDataPointer lxDat
 
     writer.formatElement("ScanCenter", "%f",       processingControl->Value<float>("ScanCenter"));
     writer.formatElement("Landmark", "%f",         processingControl->Value<float>("Landmark"));
-    writer.formatElement("CoilConfigUID", "%u",    processingControl->Value<int>("CoilConfigUID"));
+    writer.formatElement("CoilConfigUID", "%u",    processingControl->Value<unsigned int>("CoilConfigUID"));
     writer.formatElement("RawPassSize", "%llu",    processingControl->Value<int>("RawPassSize"));
 
     // ReconstructionParameters

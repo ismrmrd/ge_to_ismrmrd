@@ -23,12 +23,11 @@ class NIHepiConverter: public PfileToIsmrmrd::GenericConverter
 {
 public:
 
-   virtual std::vector<ISMRMRD::Acquisition> getAcquisitions (GERecon::Legacy::PfilePointer &pfile,
-							      unsigned int view_num);
+   std::vector<ISMRMRD::Acquisition> getAcquisitions (GERecon::Legacy::PfilePointer &pfile,
+                                                      unsigned int view_num);
 
-   virtual std::vector<ISMRMRD::Acquisition> getAcquisitions (GERecon::ScanArchivePointer &scanArchive,
-							      unsigned int view_num);
-
+   std::vector<ISMRMRD::Acquisition> getAcquisitions (GERecon::ScanArchivePointer &scanArchive,
+                                                      unsigned int view_num);
 };
 
 #endif /* NIH_EPI_CONVERTER_H */

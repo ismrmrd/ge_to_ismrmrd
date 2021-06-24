@@ -73,7 +73,7 @@ class SequenceConverter
 {
 public:
     SequenceConverter() { }
-    virtual ~SequenceConverter() { }
+    ~SequenceConverter() { }
 
     /**
      * Create the ISMRMRD acquisitions corresponding to a given view in memory
