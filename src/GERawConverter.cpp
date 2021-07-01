@@ -99,6 +99,11 @@ std::shared_ptr<SequenceConverter> GERawConverter::useConverter(const std::strin
       converter_ = std::shared_ptr<SequenceConverter>(new GenericConverter());
    }
 
+   if (!classname.compare("NIHepiConverter"))
+   {
+      converter_ = std::shared_ptr<SequenceConverter>(new NIHepiConverter());
+   }
+
    return converter_;
 }
 
@@ -267,7 +272,7 @@ bool GERawConverter::trySequenceMapping(std::shared_ptr<xmlDoc> doc, xmlNodePtr 
         libpath = ge_tools_home + "lib/" + libpath + ext;
         stylesheet = ge_tools_home + "share/ge-tools/config/" + stylesheet;
 
-        usePlugin(libpath, classname);
+        // usePlugin(libpath, classname);
         useStylesheetFilename(stylesheet);
         recon_config_ = std::string(reconconfig);
         success = true;
@@ -345,11 +350,11 @@ std::vector<ISMRMRD::Acquisition> GERawConverter::getAcquisitions(unsigned int v
 {
    if (rawObjectType_ == SCAN_ARCHIVE_RAW_TYPE)
    {
-      // return converter_->getConverter()->getAcquisitions(scanArchive_, view_num);
+      return converter_->getAcquisitions(scanArchive_, view_num);
    }
    else
    {
-      // return converter_->getConverter()->getAcquisitions(pfile_, view_num);
+      return converter_->getAcquisitions(pfile_, view_num);
    }
 }
 

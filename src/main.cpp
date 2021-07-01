@@ -116,7 +116,6 @@ int main (int argc, char *argv[])
         }
 
         try {
-            // converter->usePlugin(libpath, classname);
             converter->useConverter(classname);
         } catch (const std::exception& e) {
             std::cerr << "Failed to override plugin: " << e.what() << std::endl;

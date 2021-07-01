@@ -10,7 +10,7 @@ include_directories(
 # build P-File to ISMRMRD converter library and tool
 set(G2I_LIB "g2i")
 add_library(${G2I_LIB} SHARED
-    GERawConverter.cpp
+               GERawConverter.cpp
     Plugin.cpp)
 target_link_libraries(${G2I_LIB}
     ${ORCHESTRA_LIBRARIES}
@@ -23,7 +23,9 @@ install(FILES SequenceConverter.h DESTINATION include/ge-tools)
 set(G2I_EXE "ge2ismrmrd")
 add_executable(${G2I_EXE}
                main.cpp
-               GenericConverter.cpp)
+               GenericConverter.cpp
+               NIHPlugins/epiConverter.cpp
+              )
 target_link_libraries(${G2I_EXE}
     ${G2I_LIB}
     ${ISMRMRD_LIBRARIES})

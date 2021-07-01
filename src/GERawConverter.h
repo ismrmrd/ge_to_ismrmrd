@@ -11,6 +11,7 @@
 #include "Plugin.h"
 #include "SequenceConverter.h"
 #include "GenericConverter.h"
+#include "NIHPlugins/epiConverter.h"
 
 // Libxml2 forward declarations
 struct _xmlDoc;
