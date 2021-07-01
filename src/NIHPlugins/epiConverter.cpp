@@ -217,5 +217,3 @@ std::vector<ISMRMRD::Acquisition> NIHepiConverter::getAcquisitions(GERecon::Scan
    return acqs;
 }
 
-SEQUENCE_CONVERTER_FACTORY_DECLARE(NIHepiConverter)
-

@@ -177,8 +177,6 @@ std::vector<ISMRMRD::Acquisition> GenericConverter::getAcquisitions(GERecon::Sca
    unsigned int     numSlices = processingControl->Value<int>("NumSlices");
    size_t          frame_size = processingControl->Value<int>("AcquiredXRes");
 
-   std::cout << "Entering GenericConverter getAcquisitions() for ScanArhive files." << std::endl;
-
    while (packetCount < packetQuantity)
    {
       // encoding IDs to fill ISMRMRD headers.
@@ -282,8 +280,6 @@ std::vector<ISMRMRD::Acquisition> GenericConverter::getAcquisitions(GERecon::Sca
 
       packetCount++;
    }
-
-   std::cout << "Leaving GenericConverter getAcquisitions() for ScanArhive files." << std::endl;
 
    return acqs;
 }
@@ -547,8 +543,6 @@ void GenericConverter::makeDirectionVectors(float gwp1[3],     float gwp2[3],   
    phase_dir[0] = p1 / yd; phase_dir[1] = p2 / yd; phase_dir[2] = p3 / yd;
    slice_dir[0] = s1 / zd; slice_dir[1] = s2 / zd; slice_dir[2] = s3 / zd;
 }
-
-SEQUENCE_CONVERTER_FACTORY_DECLARE(GenericConverter)
 
 } // namespace PfileToIsmrmrd
 

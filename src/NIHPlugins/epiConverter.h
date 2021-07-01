@@ -1,23 +1,11 @@
 
-/** @file 2dfastConverter.h */
+/** @file epiConverter.h */
 #ifndef NIH_EPI_CONVERTER_H
 #define NIH_EPI_CONVERTER_H
-
-// #include <Orchestra/Common/ReconPaths.h>
-// #include <Orchestra/Epi/LxControlSource.h>
-// #include <Orchestra/Epi/RowFlipParameters.h>
-// #include <Orchestra/Epi/RowFlipPlugin.h>
-// #include <Orchestra/Epi/PhaseCorrectionReferenceFile.h>
-// #include <Orchestra/Epi/SelfNavDynamicPhaseCorrectionPlugin.h>
-// #include <Orchestra/Epi/Diffusion/DynamicPhaseCorrectionManager.h>
 
 #include "ismrmrd/ismrmrd.h"
 
 #include "GenericConverter.h"
-
-// using namespace MDArray;
-// using namespace GERecon;
-// using namespace GERecon::Epi;
 
 class NIHepiConverter: public PfileToIsmrmrd::GenericConverter
 {

@@ -1,3 +1,4 @@
+
 include_directories(${LIBXML2_INCLUDE_DIR})
 
 include_directories(
@@ -7,11 +8,14 @@ include_directories(
     ${LIBXML2_INCLUDE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR})
 
-# build P-File to ISMRMRD converter library and tool
+# build GE to ISMRMRD converter library and tool
 set(G2I_LIB "g2i")
 add_library(${G2I_LIB} SHARED
-               GERawConverter.cpp
-    Plugin.cpp)
+            GERawConverter.cpp
+            GenericConverter.cpp
+            NIHPlugins/2dfastConverter.cpp
+            NIHPlugins/epiConverter.cpp
+           )
 target_link_libraries(${G2I_LIB}
     ${ORCHESTRA_LIBRARIES}
     ${LIBXSLT_LIBRARIES}
@@ -23,21 +27,11 @@ install(FILES SequenceConverter.h DESTINATION include/ge-tools)
 set(G2I_EXE "ge2ismrmrd")
 add_executable(${G2I_EXE}
                main.cpp
-               GenericConverter.cpp
-               NIHPlugins/epiConverter.cpp
               )
 target_link_libraries(${G2I_EXE}
     ${G2I_LIB}
     ${ISMRMRD_LIBRARIES})
 install(TARGETS ${G2I_EXE} DESTINATION bin)
-
-# set(GENERIC_PLUGIN "g2i-generic")
-# add_library(${GENERIC_PLUGIN} SHARED GenericConverter.cpp)
-# target_link_libraries(${GENERIC_PLUGIN}
-    # ${G2I_LIB}
-    # ${ISMRMRD_LIBRARIES})
-# install(TARGETS ${GENERIC_PLUGIN} DESTINATION lib)
-# install(FILES GenericConverter.h DESTINATION include/ge-tools)
 
 install(DIRECTORY config/
         DESTINATION share/ge-tools/config)
@@ -66,3 +60,4 @@ if(DOXYGEN_FOUND)
 else(DOXYGEN_FOUND)
     message("Doxygen is needed to build ge-ismrmrd's API docs")
 endif(DOXYGEN_FOUND)
+

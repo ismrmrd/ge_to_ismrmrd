@@ -8,7 +8,6 @@
 #include "ismrmrd/ismrmrd.h"
 
 // Local
-#include "Plugin.h"
 #include "SequenceConverter.h"
 #include "GenericConverter.h"
 #include "NIHPlugins/epiConverter.h"
@@ -50,7 +49,6 @@ class GERawConverter
 public:
     GERawConverter(const std::string& pfilepath, bool logging=false);
 
-    void usePlugin(const std::string& filename, const std::string& classname);
     std::shared_ptr<SequenceConverter> useConverter(const std::string& classname);
     std::shared_ptr<SequenceConverter> getConverter();
 
@@ -86,7 +84,6 @@ private:
     GERecon::Legacy::LxDownloadDataPointer lxData_;
     GERecon::Control::ProcessingControlPointer processingControl_;
     int rawObjectType_; // to allow reference to a P-File or ScanArchive object
-    std::shared_ptr<Plugin> plugin_;
     std::shared_ptr<PfileToIsmrmrd::SequenceConverter> converter_;
 
     logstream log_;

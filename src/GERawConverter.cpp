@@ -83,15 +83,6 @@ GERawConverter::GERawConverter(const std::string& rawFilePath, bool logging)
                                                      // an incomplete file written.
 }
 
-/**
- * Loads a sequence conversion plugin from full filepath
- */
-void GERawConverter::usePlugin(const std::string& filename, const std::string& classname)
-{
-    log_ << "Loading plugin: " << filename << ":" << classname << std::endl;
-    plugin_ = std::shared_ptr<Plugin>(new Plugin(filename, classname));
-}
-
 std::shared_ptr<SequenceConverter> GERawConverter::useConverter(const std::string& classname)
 {
    if (!classname.compare("GenericConverter"))
@@ -272,7 +263,6 @@ bool GERawConverter::trySequenceMapping(std::shared_ptr<xmlDoc> doc, xmlNodePtr 
         libpath = ge_tools_home + "lib/" + libpath + ext;
         stylesheet = ge_tools_home + "share/ge-tools/config/" + stylesheet;
 
-        // usePlugin(libpath, classname);
         useStylesheetFilename(stylesheet);
         recon_config_ = std::string(reconconfig);
         success = true;
