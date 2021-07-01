@@ -10,6 +10,7 @@
 // Local
 #include "Plugin.h"
 #include "SequenceConverter.h"
+#include "GenericConverter.h"
 
 // Libxml2 forward declarations
 struct _xmlDoc;
@@ -49,6 +50,8 @@ public:
     GERawConverter(const std::string& pfilepath, bool logging=false);
 
     void usePlugin(const std::string& filename, const std::string& classname);
+    std::shared_ptr<SequenceConverter> useConverter(const std::string& classname);
+    std::shared_ptr<SequenceConverter> getConverter();
 
     void useStylesheetFilename(const std::string& filename);
     void useStylesheetStream(std::ifstream& stream);
@@ -83,6 +86,7 @@ private:
     GERecon::Control::ProcessingControlPointer processingControl_;
     int rawObjectType_; // to allow reference to a P-File or ScanArchive object
     std::shared_ptr<Plugin> plugin_;
+    std::shared_ptr<PfileToIsmrmrd::SequenceConverter> converter_;
 
     logstream log_;
 };

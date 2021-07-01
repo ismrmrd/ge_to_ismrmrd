@@ -44,10 +44,10 @@ static std::string ge_header_to_xml(GERecon::Legacy::LxDownloadDataPointer lxDat
                                     GERecon::Control::ProcessingControlPointer processingControl);
 
 /**
- * Creates a GERawConverter from an ifstream of the PFile header
+ * Creates a GERawConverter from an ifstream of the raw data file header
  *
- * @param fp raw FILE pointer to PFile
- * @throws std::runtime_error if P-File cannot be read
+ * @param fp raw FILE pointer to raw data file
+ * @throws std::runtime_error if raw data file cannot be read
  */
 GERawConverter::GERawConverter(const std::string& rawFilePath, bool logging)
     : log_(logging)
@@ -90,6 +90,16 @@ void GERawConverter::usePlugin(const std::string& filename, const std::string& c
 {
     log_ << "Loading plugin: " << filename << ":" << classname << std::endl;
     plugin_ = std::shared_ptr<Plugin>(new Plugin(filename, classname));
+}
+
+std::shared_ptr<SequenceConverter> GERawConverter::useConverter(const std::string& classname)
+{
+   if (!classname.compare("GenericConverter"))
+   {
+      converter_ = std::shared_ptr<SequenceConverter>(new GenericConverter());
+   }
+
+   return converter_;
 }
 
 void GERawConverter::useStylesheetFilename(const std::string& filename)
@@ -335,11 +345,11 @@ std::vector<ISMRMRD::Acquisition> GERawConverter::getAcquisitions(unsigned int v
 {
    if (rawObjectType_ == SCAN_ARCHIVE_RAW_TYPE)
    {
-     return plugin_->getConverter()->getAcquisitions(scanArchive_, view_num);
+      // return converter_->getConverter()->getAcquisitions(scanArchive_, view_num);
    }
    else
    {
-      return plugin_->getConverter()->getAcquisitions(pfile_, view_num);
+      // return converter_->getConverter()->getAcquisitions(pfile_, view_num);
    }
 }
 

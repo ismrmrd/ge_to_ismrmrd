@@ -177,6 +177,8 @@ std::vector<ISMRMRD::Acquisition> GenericConverter::getAcquisitions(GERecon::Sca
    unsigned int     numSlices = processingControl->Value<int>("NumSlices");
    size_t          frame_size = processingControl->Value<int>("AcquiredXRes");
 
+   std::cout << "Entering GenericConverter getAcquisitions() for ScanArhive files." << std::endl;
+
    while (packetCount < packetQuantity)
    {
       // encoding IDs to fill ISMRMRD headers.
@@ -280,6 +282,8 @@ std::vector<ISMRMRD::Acquisition> GenericConverter::getAcquisitions(GERecon::Sca
 
       packetCount++;
    }
+
+   std::cout << "Leaving GenericConverter getAcquisitions() for ScanArhive files." << std::endl;
 
    return acqs;
 }

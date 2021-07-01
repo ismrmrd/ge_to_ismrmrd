@@ -21,19 +21,21 @@ install(TARGETS ${G2I_LIB} DESTINATION lib)
 install(FILES SequenceConverter.h DESTINATION include/ge-tools)
 
 set(G2I_EXE "ge2ismrmrd")
-add_executable(${G2I_EXE} main.cpp)
+add_executable(${G2I_EXE}
+               main.cpp
+               GenericConverter.cpp)
 target_link_libraries(${G2I_EXE}
     ${G2I_LIB}
     ${ISMRMRD_LIBRARIES})
 install(TARGETS ${G2I_EXE} DESTINATION bin)
 
-set(GENERIC_PLUGIN "g2i-generic")
-add_library(${GENERIC_PLUGIN} SHARED GenericConverter.cpp)
-target_link_libraries(${GENERIC_PLUGIN}
-    ${G2I_LIB}
-    ${ISMRMRD_LIBRARIES})
-install(TARGETS ${GENERIC_PLUGIN} DESTINATION lib)
-install(FILES GenericConverter.h DESTINATION include/ge-tools)
+# set(GENERIC_PLUGIN "g2i-generic")
+# add_library(${GENERIC_PLUGIN} SHARED GenericConverter.cpp)
+# target_link_libraries(${GENERIC_PLUGIN}
+    # ${G2I_LIB}
+    # ${ISMRMRD_LIBRARIES})
+# install(TARGETS ${GENERIC_PLUGIN} DESTINATION lib)
+# install(FILES GenericConverter.h DESTINATION include/ge-tools)
 
 install(DIRECTORY config/
         DESTINATION share/ge-tools/config)
