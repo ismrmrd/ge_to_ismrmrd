@@ -90,13 +90,13 @@ Orchestra conversion tools
 1. A typical command line to convert the supplied P-file using this library is:
 
    ```bash
-   ge2ismrmrd -v -l libg2i-generic.so -p GenericConverter -x $GE_TOOLS_HOME/share/ge-tools/config/default.xsl P21504_FSE.7
+   ge2ismrmrd -v P21504_FSE.7
    ```
 
-1. If customized conversion libraries are desired, the corresponding command will be:
+1. If customized conversion libraries and/or stylesheets are desired, the corresponding command will be:
 
    ```bash
-   ge2ismrmrd -v -l libg2i-NIH.so -p NIH2dfastConverter -x $GE_TOOLS_HOME/share/ge-tools/config/default.xsl P21504_FSE.7
+   ge2ismrmrd -v -p GenericConverter -x $GE_TOOLS_HOME/share/ge-tools/config/default.xsl P21504_FSE.7
    ```
 
    The source code that enables this example is included with these tools. This example is a straightforward
@@ -105,7 +105,7 @@ Orchestra conversion tools
 1. Similarly, a typical command line to convert an example ScanArchive file using this library is:
 
    ```bash
-   ge2ismrmrd -v -l libg2i-generic.so -p GenericConverter -x $GE_TOOLS_HOME/share/ge-tools/config/default.xsl ScanArchive_FSE.h5
+   ge2ismrmrd -v -p GenericConverter -x $GE_TOOLS_HOME/share/ge-tools/config/default.xsl ScanArchive_FSE.h5
    ```
 
    Sample raw data files are now in the 'sampleData' directory.
