@@ -10,6 +10,7 @@
 // Local
 #include "SequenceConverter.h"
 #include "GenericConverter.h"
+#include "NIHPlugins/2dfastConverter.h"
 #include "NIHPlugins/epiConverter.h"
 
 // Libxml2 forward declarations

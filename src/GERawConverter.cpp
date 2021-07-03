@@ -82,6 +82,10 @@ GERawConverter::GERawConverter(const std::string& rawFilePath, const std::string
    {
       converter_ = std::shared_ptr<SequenceConverter>(new GenericConverter());
    }
+   else if (!classname.compare("NIH2dfastConverter"))
+   {
+      converter_ = std::shared_ptr<SequenceConverter>(new NIH2dfastConverter());
+   }
    else if (!classname.compare("NIHepiConverter"))
    {
       converter_ = std::shared_ptr<SequenceConverter>(new NIHepiConverter());

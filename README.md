@@ -96,7 +96,7 @@ Orchestra conversion tools
 1. If customized conversion libraries and/or stylesheets are desired, the corresponding command will be:
 
    ```bash
-   ge2ismrmrd -v -p GenericConverter -x $GE_TOOLS_HOME/share/ge-tools/config/default.xsl P21504_FSE.7
+   ge2ismrmrd -v -p NIH2dfastConverter -x $GE_TOOLS_HOME/share/ge-tools/config/default.xsl P21504_FSE.7
    ```
 
    The source code that enables this example is included with these tools. This example is a straightforward
