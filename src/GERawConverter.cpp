@@ -49,53 +49,53 @@ static std::string ge_header_to_xml(GERecon::Legacy::LxDownloadDataPointer lxDat
  * @param fp raw FILE pointer to raw data file
  * @throws std::runtime_error if raw data file cannot be read
  */
-GERawConverter::GERawConverter(const std::string& rawFilePath, bool logging)
+GERawConverter::GERawConverter(const std::string& rawFilePath, const std::string& classname, bool logging)
     : log_(logging)
 {
-    psdname_ = ""; // TODO: find PSD Name in Orchestra Pfile class
-    log_ << "PSDName: " << psdname_ << std::endl;
+   psdname_ = ""; // TODO: find PSD Name in Orchestra Pfile class
+   log_ << "PSDName: " << psdname_ << std::endl;
 
-    // Use Orchestra to figure out if P-File or ScanArchive
-    if (GERecon::ScanArchive::IsArchiveFilePath(rawFilePath))
-    {
-        scanArchive_ = GERecon::ScanArchive::Create(rawFilePath, GESystem::Archive::LoadMode);
-        lxData_ = boost::dynamic_pointer_cast<GERecon::Legacy::LxDownloadData>(scanArchive_->LoadDownloadData());
+   // Use Orchestra to figure out if P-File or ScanArchive
+   if (GERecon::ScanArchive::IsArchiveFilePath(rawFilePath))
+   {
+      scanArchive_ = GERecon::ScanArchive::Create(rawFilePath, GESystem::Archive::LoadMode);
+      lxData_ = boost::dynamic_pointer_cast<GERecon::Legacy::LxDownloadData>(scanArchive_->LoadDownloadData());
 
-	boost::shared_ptr<GERecon::Legacy::LxControlSource> const controlSource = boost::make_shared<GERecon::Legacy::LxControlSource>(lxData_);
-	processingControl_ = controlSource->CreateOrchestraProcessingControl();
+      boost::shared_ptr<GERecon::Legacy::LxControlSource> const controlSource = boost::make_shared<GERecon::Legacy::LxControlSource>(lxData_);
+      processingControl_ = controlSource->CreateOrchestraProcessingControl();
 
-        rawObjectType_ = SCAN_ARCHIVE_RAW_TYPE;
-    }
-    else
-    {
-        pfile_ = GERecon::Legacy::Pfile::Create(rawFilePath,
-					        GERecon::Legacy::Pfile::AllAvailableAcquisitions,
-					        GERecon::AnonymizationPolicy(GERecon::AnonymizationPolicy::None));
+      rawObjectType_ = SCAN_ARCHIVE_RAW_TYPE;
+   }
+   else
+   {
+      pfile_ = GERecon::Legacy::Pfile::Create(rawFilePath,
+                                              GERecon::Legacy::Pfile::AllAvailableAcquisitions,
+                                              GERecon::AnonymizationPolicy(GERecon::AnonymizationPolicy::None));
 
-        lxData_ = pfile_->DownloadData();
-        processingControl_ = pfile_->CreateOrchestraProcessingControl();
+      lxData_ = pfile_->DownloadData();
+      processingControl_ = pfile_->CreateOrchestraProcessingControl();
 
-        rawObjectType_ = PFILE_RAW_TYPE;
-    }
+      rawObjectType_ = PFILE_RAW_TYPE;
+   }
 
-    // Testing dumping of raw file header as XML.
-    // processingControl_->SaveAsXml("rawHeader.xml");  // As of Orchestra 1.8-1, this is causing a crash, with
-                                                     // an incomplete file written.
-}
-
-std::shared_ptr<SequenceConverter> GERawConverter::useConverter(const std::string& classname)
-{
    if (!classname.compare("GenericConverter"))
    {
       converter_ = std::shared_ptr<SequenceConverter>(new GenericConverter());
    }
-
-   if (!classname.compare("NIHepiConverter"))
+   else if (!classname.compare("NIHepiConverter"))
    {
       converter_ = std::shared_ptr<SequenceConverter>(new NIHepiConverter());
    }
+   else
+   {
+      std::cerr << "Plugin class name: " << classname << " not implemented. Exiting..." << std::endl;
 
-   return converter_;
+      exit(EXIT_FAILURE);
+   }
+
+   // Testing dumping of raw file header as XML.
+   // processingControl_->SaveAsXml("rawHeader.xml");  // As of Orchestra 1.8-1, this is causing a crash, with
+                                                    // an incomplete file written.
 }
 
 void GERawConverter::useStylesheetFilename(const std::string& filename)
@@ -117,158 +117,6 @@ void GERawConverter::useStylesheetStream(std::ifstream& stream)
 void GERawConverter::useStylesheetString(const std::string& sheet)
 {
     stylesheet_ = sheet;
-}
-
-void GERawConverter::useConfigFilename(const std::string& filename)
-{
-    log_ << "Loading configuration: " << filename << std::endl;
-    std::ifstream stream(filename.c_str(), std::ios::binary);
-    useConfigStream(stream);
-}
-
-void GERawConverter::useConfigStream(std::ifstream& stream)
-{
-    stream.seekg(0, std::ios::beg);
-
-    std::string config((std::istreambuf_iterator<char>(stream)),
-            std::istreambuf_iterator<char>());
-    useConfigString(config);
-}
-
-bool GERawConverter::validateConfig(std::shared_ptr<xmlDoc> config_doc)
-{
-    log_ << "Validating configuration" << std::endl;
-
-    std::shared_ptr<xmlDoc> schema_doc = std::shared_ptr<xmlDoc>(
-            xmlParseMemory(g_schema.c_str(), g_schema.size()), xmlFreeDoc);
-    if (!schema_doc) {
-        throw std::runtime_error("Failed to parse embedded config-file schema");
-    }
-
-    std::shared_ptr<xmlSchemaParserCtxt> parser_ctx = std::shared_ptr<xmlSchemaParserCtxt>(
-            xmlSchemaNewDocParserCtxt(schema_doc.get()), xmlSchemaFreeParserCtxt);
-    if (!parser_ctx) {
-        throw std::runtime_error("Failed to create schema parser");
-    }
-
-    std::shared_ptr<xmlSchema> schema = std::shared_ptr<xmlSchema>(
-            xmlSchemaParse(parser_ctx.get()), xmlSchemaFree);
-    if (!schema) {
-        throw std::runtime_error("Failed to create schema");
-    }
-
-    std::shared_ptr<xmlSchemaValidCtxt> valid_ctx = std::shared_ptr<xmlSchemaValidCtxt>(
-            xmlSchemaNewValidCtxt(schema.get()), xmlSchemaFreeValidCtxt);
-    if (!valid_ctx) {
-        throw std::runtime_error("Failed to create schema validity context");
-    }
-
-    // Set error/warning logging functions
-    // xmlSchemaSetValidErrors(valid_ctx, errors, warnings, NULL);
-
-    if (xmlSchemaValidateDoc(valid_ctx.get(), config_doc.get()) == 0) {
-        return true;
-    }
-    return false;
-}
-
-/**
- * Validates configuration then loads plugin, stylesheet
- *
- * TODO: Leaks memory if exception thrown
- */
-void GERawConverter::useConfigString(const std::string& config)
-{
-    std::string error_message;
-
-    std::shared_ptr<xmlDoc> config_doc = std::shared_ptr<xmlDoc>(
-            xmlParseMemory(config.c_str(), config.size()), xmlFreeDoc);
-    if (!config_doc) {
-        throw std::runtime_error("Failed to parse config");
-    }
-
-    if (!validateConfig(config_doc)) {
-        throw std::runtime_error("Invalid configuration");
-    }
-
-    log_ << "Searching for sequence mapping" << std::endl;
-
-    xmlNodePtr cur = xmlDocGetRootElement(config_doc.get());
-    if (NULL == cur) {
-        throw std::runtime_error("Can't get root element of configuration");
-    }
-
-    if (xmlStrcmp(cur->name, (const xmlChar *)"conversionConfiguration")) {
-        throw std::runtime_error("root element should be \"conversionConfiguration\"");
-    }
-
-    cur = cur->xmlChildrenNode;
-    while (cur != NULL) {
-        if (xmlStrcmp(cur->name, (const xmlChar*) "sequenceMapping") == 0) {
-            if (trySequenceMapping(config_doc, cur)) {
-                break;
-            }
-        }
-
-        cur = cur->next;
-    }
-}
-
-/**
- * Attempts to load and use a sequence mapping from an XML config.
- *
- * Returns `true` on success, `false` otherwise.
- */
-bool GERawConverter::trySequenceMapping(std::shared_ptr<xmlDoc> doc, xmlNodePtr mapping)
-{
-    xmlNodePtr parameter = mapping->xmlChildrenNode;
-    std::string psdname, libpath, classname, stylesheet, reconconfig;
-
-    while (parameter != NULL) {
-        if (xmlStrcmp(parameter->name, (const xmlChar*)"psdname") == 0) {
-            char *tmp = (char*)xmlNodeListGetString(doc.get(), parameter->xmlChildrenNode, 1);
-            psdname = std::string(tmp);
-            xmlFree(tmp);
-        } else if (xmlStrcmp(parameter->name, (const xmlChar*)"libraryPath") == 0) {
-            char *tmp = (char*)xmlNodeListGetString(doc.get(), parameter->xmlChildrenNode, 1);
-            libpath = std::string(tmp);
-            xmlFree(tmp);
-        } else if (xmlStrcmp(parameter->name, (const xmlChar*)"className") == 0) {
-            char *tmp = (char*)xmlNodeListGetString(doc.get(), parameter->xmlChildrenNode, 1);
-            classname = std::string(tmp);
-            xmlFree(tmp);
-        } else if (xmlStrcmp(parameter->name, (const xmlChar*)"stylesheet") == 0) {
-            char *tmp = (char*)xmlNodeListGetString(doc.get(), parameter->xmlChildrenNode, 1);
-            stylesheet = std::string(tmp);
-            xmlFree(tmp);
-        } else if (xmlStrcmp(parameter->name, (const xmlChar*)"reconConfigName") == 0) {
-            char *tmp = (char*)xmlNodeListGetString(doc.get(), parameter->xmlChildrenNode, 1);
-            reconconfig = std::string(tmp);
-            xmlFree(tmp);
-        }
-        parameter = parameter->next;
-    }
-
-    bool success = false;
-    /* check if psdname matches */
-    if (xmlStrcmp(BAD_CAST psdname.c_str(), (const xmlChar*) psdname_.c_str()) == 0) {
-        log_ << "Found matching psdname: " << psdname << std::endl;
-
-        std::string ge_tools_home(get_ge_tools_home());
-#ifdef __APPLE__
-        std::string ext = ".dylib";
-#else
-        std::string ext = ".so";
-#endif
-        libpath = ge_tools_home + "lib/" + libpath + ext;
-        stylesheet = ge_tools_home + "share/ge-tools/config/" + stylesheet;
-
-        useStylesheetFilename(stylesheet);
-        recon_config_ = std::string(reconconfig);
-        success = true;
-    }
-
-    return success;
 }
 
 /**

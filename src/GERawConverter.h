@@ -47,18 +47,13 @@ enum GE_RAW_TYPES
 class GERawConverter
 {
 public:
-    GERawConverter(const std::string& pfilepath, bool logging=false);
+    GERawConverter(const std::string& pfilepath, const std::string& classname, bool logging=false);
 
-    std::shared_ptr<SequenceConverter> useConverter(const std::string& classname);
     std::shared_ptr<SequenceConverter> getConverter();
 
     void useStylesheetFilename(const std::string& filename);
     void useStylesheetStream(std::ifstream& stream);
     void useStylesheetString(const std::string& sheet);
-
-    void useConfigFilename(const std::string& filename);
-    void useConfigStream(std::ifstream& stream);
-    void useConfigString(const std::string& config);
 
     std::string getIsmrmrdXMLHeader();
 
