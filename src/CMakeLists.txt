@@ -22,7 +22,10 @@ target_link_libraries(${G2I_LIB}
     ${LIBXML2_LIBRARIES}
     dl)
 install(TARGETS ${G2I_LIB} DESTINATION lib)
-install(FILES SequenceConverter.h DESTINATION include/ge-tools)
+install(FILES SequenceConverter.h
+              GERawConverter.h
+              GenericConverter.h
+        DESTINATION include/ge-tools)
 
 set(G2I_EXE "ge2ismrmrd")
 add_executable(${G2I_EXE}
