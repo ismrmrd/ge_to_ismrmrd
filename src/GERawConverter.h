@@ -17,7 +17,7 @@
 struct _xmlDoc;
 struct _xmlNode;
 
-namespace PfileToIsmrmrd {
+namespace GEToIsmrmrd {
 
 struct logstream {
     logstream(bool enable) : enabled(enable) {}
@@ -80,11 +80,11 @@ private:
     GERecon::Legacy::LxDownloadDataPointer lxData_;
     GERecon::Control::ProcessingControlPointer processingControl_;
     int rawObjectType_; // to allow reference to a P-File or ScanArchive object
-    std::shared_ptr<PfileToIsmrmrd::SequenceConverter> converter_;
+    std::shared_ptr<GEToIsmrmrd::SequenceConverter> converter_;
 
     logstream log_;
 };
 
-} // namespace PfileToIsmrmrd
+} // namespace GEToIsmrmrd
 
 #endif  // GE_RAW_CONVERTER_H

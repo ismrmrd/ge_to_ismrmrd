@@ -12,7 +12,7 @@ struct LOADTEST {
   ~LOADTEST() { std::cerr << __FILE__ << ": shared object unloaded" << std::endl; }
 } loadTest;
 
-namespace PfileToIsmrmrd {
+namespace GEToIsmrmrd {
 
 int GenericConverter::get_view_idx(GERecon::Control::ProcessingControlPointer processingControl,
                                    unsigned int view_num, ISMRMRD::EncodingCounters &idx)
@@ -544,5 +544,5 @@ void GenericConverter::makeDirectionVectors(float gwp1[3],     float gwp2[3],   
    slice_dir[0] = s1 / zd; slice_dir[1] = s2 / zd; slice_dir[2] = s3 / zd;
 }
 
-} // namespace PfileToIsmrmrd
+} // namespace GEToIsmrmrd
 

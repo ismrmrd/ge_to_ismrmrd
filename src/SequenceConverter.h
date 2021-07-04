@@ -58,7 +58,7 @@ using namespace GERecon::Epi;
 // ISMRMRD
 #include "ismrmrd/ismrmrd.h"
 
-namespace PfileToIsmrmrd {
+namespace GEToIsmrmrd {
 
 class SequenceConverter
 {
@@ -83,7 +83,7 @@ public:
                                                               unsigned int view_num) = 0;
 };
 
-} // namespace PfileToIsmrmrd
+} // namespace GEToIsmrmrd
 
 #endif /* SEQUENCE_CONVERTER_H */
 

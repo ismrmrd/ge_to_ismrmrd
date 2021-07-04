@@ -77,9 +77,9 @@ int main (int argc, char *argv[])
    }
 
    // Create a new Converter and give it a plugin configuration
-   std::shared_ptr<PfileToIsmrmrd::GERawConverter> converter;
+   std::shared_ptr<GEToIsmrmrd::GERawConverter> converter;
    try {
-      converter = std::make_shared<PfileToIsmrmrd::GERawConverter>(rawFile, classname, verbose);
+      converter = std::make_shared<GEToIsmrmrd::GERawConverter>(rawFile, classname, verbose);
    } catch (const std::exception& e) {
       std::cerr << "Failed to instantiate converter: " << e.what() << std::endl;
       return EXIT_FAILURE;

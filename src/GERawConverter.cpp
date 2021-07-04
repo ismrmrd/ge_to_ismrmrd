@@ -13,7 +13,7 @@
 #include "ge_tools_path.h"
 
 
-namespace PfileToIsmrmrd {
+namespace GEToIsmrmrd {
 
 const std::string g_schema = "\
 <?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>                \
@@ -476,5 +476,5 @@ static std::string ge_header_to_xml(GERecon::Legacy::LxDownloadDataPointer lxDat
     return writer.getXML();
 }
 
-} // namespace PfileToIsmrmrd
+} // namespace GEToIsmrmrd
 

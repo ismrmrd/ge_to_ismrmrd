@@ -7,7 +7,7 @@
 
 #include "GenericConverter.h"
 
-class NIHepiConverter: public PfileToIsmrmrd::GenericConverter
+class NIHepiConverter: public GEToIsmrmrd::GenericConverter
 {
 public:
 

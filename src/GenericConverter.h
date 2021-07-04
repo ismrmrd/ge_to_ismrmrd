@@ -22,7 +22,7 @@ struct geRawDataSliceVectors {
 };
 typedef struct geRawDataSliceVectors geRawDataSliceVectors_t;
 
-namespace PfileToIsmrmrd {
+namespace GEToIsmrmrd {
 
 class GenericConverter: public SequenceConverter
 {
@@ -51,7 +51,7 @@ protected:
                                                        unsigned int view_num, ISMRMRD::EncodingCounters &idx);
 };
 
-} // namespace PfileToIsmrmrd
+} // namespace GEToIsmrmrd
 
 #endif /* GENERIC_CONVERTER_H */
 
