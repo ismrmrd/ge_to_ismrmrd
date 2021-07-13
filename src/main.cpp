@@ -31,7 +31,7 @@ int main (int argc, char *argv[])
       ("verbose,v", "enable verbose mode")
       ("plugin,p", po::value<std::string>(&classname)->default_value(sequence_class_default), "class/sequence name in library used for conversion")
       ("stylesheet,x", po::value<std::string>(&stylesheet)->default_value(stylesheet_default), "XSL stylesheet file mapping values provided by Orchestra to those needed by ISMRMRD")
-      ("output,o", po::value<std::string>(&outfile)->default_value("testdata.h5"), "output HDF5 file")
+      ("output,o", po::value<std::string>(&outfile)->default_value("converted_data.h5"), "output HDF5 file")
       ("string,s", "only print the HDF5 XML header")
       ;
 
