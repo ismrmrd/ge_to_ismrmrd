@@ -19,16 +19,11 @@ std::vector<ISMRMRD::Acquisition> NIHepiConverter::getAcquisitions(GERecon::Scan
 {
    std::cerr << "Using NIHepi ScanArchive converter." << std::endl;
 
-   boost::filesystem::path scanArchivePath = scanArchivePtr->Path();
-
    GERecon::Acquisition::ArchiveStoragePointer archiveStoragePointer    = GERecon::Acquisition::ArchiveStorage::Create(scanArchivePtr);
    GERecon::Legacy::LxDownloadDataPointer lxData                        = boost::dynamic_pointer_cast<GERecon::Legacy::LxDownloadData>(scanArchivePtr->LoadDownloadData());
    boost::shared_ptr<GERecon::Epi::LxControlSource> const controlSource = boost::make_shared<GERecon::Epi::LxControlSource>(lxData);
    GERecon::Control::ProcessingControlPointer processingControl         = controlSource->CreateOrchestraProcessingControl();
 
-   // GERecon::Path::InputAppData(scanArchivePath.parent_path());
-   // GERecon::Path::InputExamData(scanArchivePath.parent_path());
-   // GERecon::Path::ScannerConfig(scanArchivePath.parent_path());
    scanArchivePtr->LoadSavedFiles();
 
    int const    packetQuantity = archiveStoragePointer->AvailableControlCount();
