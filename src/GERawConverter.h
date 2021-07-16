@@ -62,6 +62,8 @@ public:
 
     std::string getReconConfigName(void);
 
+    std::string ge_header_to_xml(GERecon::Legacy::LxDownloadDataPointer lxData,
+                                 GERecon::Control::ProcessingControlPointer processingControl);
 private:
     // Non-copyable
     GERawConverter(const GERawConverter& other);

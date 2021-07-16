@@ -231,8 +231,8 @@
             </phase>
             <repetition>
                <minimum>0</minimum>
-               <maximum><xsl:value-of select="Header/NumVolumes - 1"/></maximum>
-               <center><xsl:value-of select="floor(Header/NumVolumes div 2)"/></center>
+               <maximum><xsl:value-of select="Header/epiParameters/num_volumes - 1"/></maximum>
+               <center><xsl:value-of select="floor(Header/epiParameters/num_volumes div 2)"/></center>
             </repetition>
             <segment>
                <minimum>0</minimum>

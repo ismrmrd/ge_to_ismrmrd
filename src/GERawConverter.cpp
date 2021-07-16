@@ -40,9 +40,6 @@ const std::string g_schema = "\
     </xs:complexType>                                                       \
 </xs:schema>";
 
-static std::string ge_header_to_xml(GERecon::Legacy::LxDownloadDataPointer lxData,
-                                    GERecon::Control::ProcessingControlPointer processingControl);
-
 /**
  * Creates a GERawConverter from an ifstream of the raw data file header
  *
@@ -210,8 +207,8 @@ std::string GERawConverter::getReconConfigName(void)
     return std::string(recon_config_);
 }
 
-static std::string ge_header_to_xml(GERecon::Legacy::LxDownloadDataPointer lxData,
-                                    GERecon::Control::ProcessingControlPointer processingControl)
+std::string GERawConverter::ge_header_to_xml(GERecon::Legacy::LxDownloadDataPointer lxData,
+                                             GERecon::Control::ProcessingControlPointer processingControl)
 {
     // DEBUG: std::cerr << "Starting conversion of raw file header to XML string" << std::endl;
 
@@ -246,7 +243,6 @@ static std::string ge_header_to_xml(GERecon::Legacy::LxDownloadDataPointer lxDat
 
     writer.formatElement("SliceCount", "%d",       processingControl->Value<int>("NumSlices"));
     writer.formatElement("ChannelCount", "%d",     processingControl->Value<int>("NumChannels"));
-    // writer.formatElement("RepetitionCount", "%d",  1 /* pfile->RepetitionCount() */); // identify variable for this
     writer.formatElement("OtherUID", "%s",         GEDicom::UID::Create(GEDicom::UID::OtherUID).c_str());
 
     GERecon::Legacy::DicomSeries legacySeries(lxData);
@@ -452,16 +448,26 @@ static std::string ge_header_to_xml(GERecon::Legacy::LxDownloadDataPointer lxDat
 
         boost::shared_ptr<GERecon::Epi::LxControlSource> const controlSource = boost::make_shared<GERecon::Epi::LxControlSource>(lxData);
         GERecon::Control::ProcessingControlPointer               procCtrlEPI = controlSource->CreateOrchestraProcessingControl();
+        GERecon::Acquisition::ArchiveStoragePointer      archive_storage_ptr = GERecon::Acquisition::ArchiveStorage::Create(scanArchive_);
+
+        int ref_views                                        = procCtrlEPI->Value<int>("ExtraFramesTop") + procCtrlEPI->Value<int>("ExtraFramesBottom");
+
+        // In EPI ScanArchive files, the number of acquisitions == (number of slices per volume + 1 (control packet)) * number of volumes.
+        //
+        // So to recover number of volumes / repetitions, just invert this relationship.  This may be fragile, if other types of packets,
+        // with different OpCodes - start getting included in the ScanArvhive.
+        int num_volumes                                      = archive_storage_ptr->AvailableControlCount() /
+                                                               (processingControl->Value<int>("NumSlices") + 1);
 
         writer.startElement("epiParameters");
           writer.addBooleanElement("isEpiRefScanIntegrated",   procCtrlEPI->Value<bool>("IntegratedReferenceScan"));
           writer.addBooleanElement("MultibandEnabled",         procCtrlEPI->ValueStrict<bool>("MultibandEnabled"));
           writer.formatElement("ExtraFramesTop", "%d",         procCtrlEPI->Value<int>("ExtraFramesTop"));
           writer.formatElement("AcquiredYRes", "%d",           procCtrlEPI->Value<int>("AcquiredYRes"));
-          std::cout << "In epiConverter, AcquiredYRes = " <<   procCtrlEPI->Value<int>("AcquiredYRes") << std::endl;
           writer.formatElement("ExtraFramesBottom", "%d",      procCtrlEPI->Value<int>("ExtraFramesBottom"));
-          // writer.formatElement("NumRefViews", "%d",         procCtrlEPI->Value<int>("NumRefViews")); // not found at run time up to Orchestra 1.7.1
-          writer.formatElement("NumRefViews", "%d",           (procCtrlEPI->Value<int>("ExtraFramesTop") + procCtrlEPI->Value<int>("ExtraFramesBottom")));
+          // writer.formatElement("NumRefViews", "%d",            procCtrlEPI->Value<int>("NumRefViews")); // not found at run time up to Orchestra 1.10.1
+          writer.formatElement("NumRefViews", "%d",            ref_views);
+          writer.formatElement("num_volumes", "%d",            num_volumes);
           // writer.formatElement("nMultiBandSlices", "%d",    procCtrlEPI->ValueStrict<int>("MultibandNumAcquiredSlices"));
           // writer.formatElement("NumberOfShots", "%d",       procCtrlEPI->Value<unsigned int>("NumberOfShots"));
           // writer.formatElement("NumAcqsPerRep", "%d",       procCtrlEPI->Value<int>("NumAcquisitionsPerRepetition"));
