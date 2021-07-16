@@ -37,7 +37,6 @@ foreach(libs
          Epi
          EpiDiffusion
          EpiDistortionCorrection
-         EpiMultiPhase
          EpiReferenceScan
          Flex
          Foundation
@@ -88,7 +87,7 @@ foreach(lib h5tools hdf5_cpp hdf5 Hdf5)
 endforeach()
 
 # Orchestra DCMTK libraries
-foreach(lib dcmdata dcmnet oflog ofstd)
+foreach(lib dcmdata dcmnet dcmtls oflog ofstd)
     find_library(ORCHESTRA_DCMTK_${lib}_LIBRARY ${lib}
         PATHS ${ORCHESTRA_TOPDIR}/3p   ${ORCHESTRA_TOPDIR}/include/recon/3p/mac/dcmtk-3.6.1_20140617
         PATH_SUFFIXES lib
