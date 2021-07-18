@@ -20,8 +20,6 @@ add_library(${G2I_LIB} SHARED
            )
 target_link_libraries(${G2I_LIB}
     tls
-    ssl
-    crypto
     gomp
     ${ORCHESTRA_LIBRARIES}
     ${LIBXSLT_LIBRARIES}
@@ -38,10 +36,8 @@ add_executable(${G2I_EXE}
                main.cpp
               )
 target_link_libraries(${G2I_EXE}
-    tls
     ssl
     crypto
-    gomp
     ${G2I_LIB}
     ${ISMRMRD_LIBRARIES})
 install(TARGETS ${G2I_EXE} DESTINATION bin)

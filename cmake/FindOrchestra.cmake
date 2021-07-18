@@ -87,7 +87,7 @@ foreach(lib h5tools hdf5_cpp hdf5 Hdf5)
 endforeach()
 
 # Orchestra DCMTK libraries
-foreach(lib dcmdata dcmnet dcmtls oflog ofstd)
+foreach(lib dcmdata dcmnet dcmtls oflog ofstd ssl crypto)
     find_library(ORCHESTRA_DCMTK_${lib}_LIBRARY ${lib}
         PATHS ${ORCHESTRA_TOPDIR}/3p   ${ORCHESTRA_TOPDIR}/include/recon/3p/mac/dcmtk-3.6.1_20140617
         PATH_SUFFIXES lib
