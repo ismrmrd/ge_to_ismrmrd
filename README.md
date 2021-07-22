@@ -24,9 +24,9 @@ Orchestra conversion tools
 
    On openSUSE 15.2, this output of this command is:
 
-    ```bash
-       compiler: gcc -fPIC -pthread -m64 -Wa,--noexecstack -Wall -O3 -fmessage-length=0 -grecord-gcc-switches -O2 -Wall -fstack-protector-strong -funwind-tables -fasynchronous-unwind-tables -fstack-clash-protection -g -Wa,--noexecstack -fno-common -Wall -DOPENSSL_USE_NODELETE -DL_ENDIAN -DOPENSSL_PIC -DOPENSSL_CPUID_OBJ -DOPENSSL_IA32_SSE2 -DOPENSSL_BN_ASM_MONT -DOPENSSL_BN_ASM_MONT5 -DOPENSSL_BN_ASM_GF2m -DSHA1_ASM -DSHA256_ASM -DSHA512_ASM -DKECCAK1600_ASM -DRC4_ASM -DMD5_ASM -DVPAES_ASM -DGHASH_ASM -DECP_NISTZ256_ASM -DX25519_ASM -DPOLY1305_ASM -DNDEBUG -D_FORTIFY_SOURCE=2 -DTERMIO -DPURIFY -D_GNU_SOURCE -DOPENSSL_NO_BUF_FREELISTS
-    ```
+   ```bash
+      compiler: gcc -fPIC -pthread -m64 -Wa,--noexecstack -Wall -O3 -fmessage-length=0 -grecord-gcc-switches -O2 -Wall -fstack-protector-strong -funwind-tables -fasynchronous-unwind-tables -fstack-clash-protection -g -Wa,--noexecstack -fno-common -Wall -DOPENSSL_USE_NODELETE -DL_ENDIAN -DOPENSSL_PIC -DOPENSSL_CPUID_OBJ -DOPENSSL_IA32_SSE2 -DOPENSSL_BN_ASM_MONT -DOPENSSL_BN_ASM_MONT5 -DOPENSSL_BN_ASM_GF2m -DSHA1_ASM -DSHA256_ASM -DSHA512_ASM -DKECCAK1600_ASM -DRC4_ASM -DMD5_ASM -DVPAES_ASM -DGHASH_ASM -DECP_NISTZ256_ASM -DX25519_ASM -DPOLY1305_ASM -DNDEBUG -D_FORTIFY_SOURCE=2 -DTERMIO -DPURIFY -D_GNU_SOURCE -DOPENSSL_NO_BUF_FREELISTS
+   ```
 
    This command is then used to configure and build OpenSSL.  First, obtain the last 1.0 version of
    OpenSSL (installed on GE's OS, and openSUSE 15.2), at [this
@@ -36,16 +36,16 @@ Orchestra conversion tools
    option), and with the "Entropy Gathering Daemon" option activated (with the "enable-egd" flag
    added), i.e.:
 
-    ```bash
-       ./config --prefix=$SDKTOP/3p enable-egd -fPIC -pthread -m64 -Wa,--noexecstack -Wall -O3 -fmessage-length=0 -grecord-gcc-switches -O2 -Wall -fstack-protector-strong -funwind-tables -fasynchronous-unwind-tables -fstack-clash-protection -g -Wa,--noexecstack -fno-common -Wall -DOPENSSL_USE_NODELETE -DL_ENDIAN -DOPENSSL_PIC -DOPENSSL_CPUID_OBJ -DOPENSSL_IA32_SSE2 -DOPENSSL_BN_ASM_MONT -DOPENSSL_BN_ASM_MONT5 -DOPENSSL_BN_ASM_GF2m -DSHA1_ASM -DSHA256_ASM -DSHA512_ASM -DKECCAK1600_ASM -DRC4_ASM -DMD5_ASM -DVPAES_ASM -DGHASH_ASM -DECP_NISTZ256_ASM -DX25519_ASM -DPOLY1305_ASM -DNDEBUG -D_FORTIFY_SOURCE=2 -DTERMIO -DPURIFY -D_GNU_SOURCE -DOPENSSL_NO_BUF_FREELISTS
-    ```
+   ```bash
+      ./config --prefix=$SDKTOP/3p enable-egd -fPIC -pthread -m64 -Wa,--noexecstack -Wall -O3 -fmessage-length=0 -grecord-gcc-switches -O2 -Wall -fstack-protector-strong -funwind-tables -fasynchronous-unwind-tables -fstack-clash-protection -g -Wa,--noexecstack -fno-common -Wall -DOPENSSL_USE_NODELETE -DL_ENDIAN -DOPENSSL_PIC -DOPENSSL_CPUID_OBJ -DOPENSSL_IA32_SSE2 -DOPENSSL_BN_ASM_MONT -DOPENSSL_BN_ASM_MONT5 -DOPENSSL_BN_ASM_GF2m -DSHA1_ASM -DSHA256_ASM -DSHA512_ASM -DKECCAK1600_ASM -DRC4_ASM -DMD5_ASM -DVPAES_ASM -DGHASH_ASM -DECP_NISTZ256_ASM -DX25519_ASM -DPOLY1305_ASM -DNDEBUG -D_FORTIFY_SOURCE=2 -DTERMIO -DPURIFY -D_GNU_SOURCE -DOPENSSL_NO_BUF_FREELISTS
+   ```
 
    After the OpenSSL build configuration is complete, then running:
 
-    ```bash
-       make
-       make install
-    ```
+   ```bash
+      make
+      make install
+   ```
 
    (from an environment with the appropriate system permissions) will build and install OpenSSL
    into Orchestra, so that ISMRMRD, and GE-to-ISMRMRD finds all required components, and
