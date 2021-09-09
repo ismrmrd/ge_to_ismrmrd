@@ -8,14 +8,16 @@
 #include "ismrmrd/ismrmrd.h"
 
 // Local
-#include "Plugin.h"
 #include "SequenceConverter.h"
+#include "GenericConverter.h"
+#include "NIHPlugins/2dfastConverter.h"
+#include "NIHPlugins/epiConverter.h"
 
 // Libxml2 forward declarations
 struct _xmlDoc;
 struct _xmlNode;
 
-namespace PfileToIsmrmrd {
+namespace GEToIsmrmrd {
 
 struct logstream {
     logstream(bool enable) : enabled(enable) {}
@@ -46,17 +48,13 @@ enum GE_RAW_TYPES
 class GERawConverter
 {
 public:
-    GERawConverter(const std::string& pfilepath, bool logging=false);
+    GERawConverter(const std::string& pfilepath, const std::string& classname, bool logging=false);
 
-    void usePlugin(const std::string& filename, const std::string& classname);
+    std::shared_ptr<SequenceConverter> getConverter();
 
     void useStylesheetFilename(const std::string& filename);
     void useStylesheetStream(std::ifstream& stream);
     void useStylesheetString(const std::string& sheet);
-
-    void useConfigFilename(const std::string& filename);
-    void useConfigStream(std::ifstream& stream);
-    void useConfigString(const std::string& config);
 
     std::string getIsmrmrdXMLHeader();
 
@@ -64,6 +62,8 @@ public:
 
     std::string getReconConfigName(void);
 
+    std::string ge_header_to_xml(GERecon::Legacy::LxDownloadDataPointer lxData,
+                                 GERecon::Control::ProcessingControlPointer processingControl);
 private:
     // Non-copyable
     GERawConverter(const GERawConverter& other);
@@ -82,11 +82,11 @@ private:
     GERecon::Legacy::LxDownloadDataPointer lxData_;
     GERecon::Control::ProcessingControlPointer processingControl_;
     int rawObjectType_; // to allow reference to a P-File or ScanArchive object
-    std::shared_ptr<Plugin> plugin_;
+    std::shared_ptr<GEToIsmrmrd::SequenceConverter> converter_;
 
     logstream log_;
 };
 
-} // namespace PfileToIsmrmrd
+} // namespace GEToIsmrmrd
 
 #endif  // GE_RAW_CONVERTER_H

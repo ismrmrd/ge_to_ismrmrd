@@ -7,10 +7,10 @@
 
 #include "GenericConverter.h"
 
-class NIH2dfastConverter: public PfileToIsmrmrd::GenericConverter
+class NIH2dfastConverter: public GEToIsmrmrd::GenericConverter
 {
 public:
-   NIH2dfastConverter() : PfileToIsmrmrd::GenericConverter() {}
+   NIH2dfastConverter() : GEToIsmrmrd::GenericConverter() {}
 };
 
 #endif /* NIH_2DFAST_CONVERTER_H */
