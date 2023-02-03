@@ -2,55 +2,15 @@
 
 Orchestra conversion tools
 
-## To build and install the tools to convert GE raw files into ISMRMRD files:
+## To build and install the tools to convert GE raw files (using Orchestra 2.1-1) into ISMRMRD files:
 
-1.  To use Orchestra's version 2 SDK to build ISMRMRD and GE-to-ISMRMRD, when trying to compile with
-    the shipping configuration, an error message of:
+   As of Orchestra 2.1-1, GE now provides all support libraries to link against, when building
+   against Orchestra's API. Library versions have also up been updated / modernized, therefore
+   compilation using older ABIs might not be necessary.  This will be explored in subsequent
+   commits.
 
-   ```bash
-      tlslayer.cc:(.text+0x1bed): undefined reference to `RAND_egd'
-   ```
-
-   is generated on openSUSE 15.2.  This happens because in current versions of OpenSSL, building the
-   "Entropy Gathering Daemon" is disabled by default on openSUSE.  However, since this function call
-   is in a library shipping with Orchestra 2.0, then on openSUSE, OpenSSL must be built and installed
-   into Orchestra's environment, with the appropriate option enabled.
-
-   To do this, first obtain the flags with which OpenSSL is built, by using the command:
-
-   ```bash
-      openssl version -f
-   ```
-
-   On openSUSE 15.2, this output of this command is:
-
-   ```bash
-      compiler: gcc -fPIC -pthread -m64 -Wa,--noexecstack -Wall -O3 -fmessage-length=0 -grecord-gcc-switches -O2 -Wall -fstack-protector-strong -funwind-tables -fasynchronous-unwind-tables -fstack-clash-protection -g -Wa,--noexecstack -fno-common -Wall -DOPENSSL_USE_NODELETE -DL_ENDIAN -DOPENSSL_PIC -DOPENSSL_CPUID_OBJ -DOPENSSL_IA32_SSE2 -DOPENSSL_BN_ASM_MONT -DOPENSSL_BN_ASM_MONT5 -DOPENSSL_BN_ASM_GF2m -DSHA1_ASM -DSHA256_ASM -DSHA512_ASM -DKECCAK1600_ASM -DRC4_ASM -DMD5_ASM -DVPAES_ASM -DGHASH_ASM -DECP_NISTZ256_ASM -DX25519_ASM -DPOLY1305_ASM -DNDEBUG -D_FORTIFY_SOURCE=2 -DTERMIO -DPURIFY -D_GNU_SOURCE -DOPENSSL_NO_BUF_FREELISTS
-   ```
-
-   This command is then used to configure and build OpenSSL.  First, obtain the last 1.0 version of
-   OpenSSL (installed on GE's OS, and openSUSE 15.2), at [this
-   link](https://github.com/openssl/openssl/releases/tag/OpenSSL_1_1_1g).
-
-   Then configure OpenSSL to install into Orchestra's environment (with the "--prefix=$SDKTOP/3p"
-   option), and with the "Entropy Gathering Daemon" option activated (with the "enable-egd" flag
-   added), i.e.:
-
-   ```bash
-      ./config --prefix=$SDKTOP/3p enable-egd -fPIC -pthread -m64 -Wa,--noexecstack -Wall -O3 -fmessage-length=0 -grecord-gcc-switches -O2 -Wall -fstack-protector-strong -funwind-tables -fasynchronous-unwind-tables -fstack-clash-protection -g -Wa,--noexecstack -fno-common -Wall -DOPENSSL_USE_NODELETE -DL_ENDIAN -DOPENSSL_PIC -DOPENSSL_CPUID_OBJ -DOPENSSL_IA32_SSE2 -DOPENSSL_BN_ASM_MONT -DOPENSSL_BN_ASM_MONT5 -DOPENSSL_BN_ASM_GF2m -DSHA1_ASM -DSHA256_ASM -DSHA512_ASM -DKECCAK1600_ASM -DRC4_ASM -DMD5_ASM -DVPAES_ASM -DGHASH_ASM -DECP_NISTZ256_ASM -DX25519_ASM -DPOLY1305_ASM -DNDEBUG -D_FORTIFY_SOURCE=2 -DTERMIO -DPURIFY -D_GNU_SOURCE -DOPENSSL_NO_BUF_FREELISTS
-   ```
-
-   After the OpenSSL build configuration is complete, then running:
-
-   ```bash
-      make
-      make install
-   ```
-
-   (from an environment with the appropriate system permissions) will build and install OpenSSL
-   into Orchestra, so that ISMRMRD, and GE-to-ISMRMRD finds all required components, and
-   successfully builds.  Continue with the steps previously outlined below, to build and install
-   ISMRMRD, and GE-to-ISMRMRD.
+   The steps outlined below should allow you to build and install ISMRMRD using Orchestra's
+   Boost and HDF5 libraries, and the GE-to-ISMRMRD converter.
 
 1.  Define the `SDKTOP` environment variable:
 
