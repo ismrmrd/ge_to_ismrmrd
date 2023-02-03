@@ -14,148 +14,102 @@
 
 set (ORCHESTRA_TOPDIR $ENV{SDKTOP})
 
-set (ORCHESTRA_INCLUDE_DIR ${ORCHESTRA_TOPDIR}/ $ENV{SDKTOP}/include/lx/include/)
-set (ORCHESTRA_INCLUDE_DIRS $ENV{SDKTOP}/3p/ $ENV{SDKTOP}/include/recon/)
+set (ORCHESTRA_INCLUDE_DIR  ${ORCHESTRA_TOPDIR}/include  ${ORCHESTRA_TOPDIR}/include/lx/include/)
+set (ORCHESTRA_INCLUDE_DIRS ${ORCHESTRA_TOPDIR}/3p/      ${ORCHESTRA_TOPDIR}/include/recon/)
 
 foreach(libs
-         Dicom
-         Hdf5
-         Math
-         Acquisition
-         Arc
-         Asset
-         BiasCorrection
-         Calibration3D
-         CalibrationCommon
-         Cartesian2D
-         Cartesian3D
-         Clariview
-         Common
-         Control
-         Core
-         Crucial
-         Epi
-         EpiDiffusion
-         EpiDistortionCorrection
-         EpiReferenceScan
-         Flex
-         Foundation
-         FrameDownSampler
-         Gradwarp
-         Legacy
-         MoCo
-         Pure1
-         Pure2
-         Scic
-         SpectroCommon
-         SpectroMCSI
-         SpectroMCSILegacy
-         SpectroMultiVoxel
-         SpectroSingleVoxel
-         Spiral
-         TestSupport
-         ProcessingControl
-         ProcessingFlow
-         System
-         SystemServicesImplementation
-         SystemServicesInterface
-         CalibrationMatchers
-         MaestroModels
+
+         AcquiredData.a
+         AcquiredDataApplication.a
+         AcquiredDataSupport.a
+         Acquisition.a
+         Arc.a
+         Asset.a
+         BiasCorrection.a
+         Calibration3D.a
+         CalibrationCommon.a
+         CalibrationMatchers.a
+         Cartesian2D.a
+         Cartesian2DDataHandling.a
+         Cartesian3D.a
+         Cartesian3DDataHandling.a
+         Clariview.a
+         Common.a
+         Control.a
+         CorePipeline.a
+         Crucial.a
+         Dicom.a
+         Epi.a
+         EpiDataHandling.a
+         EpiDiffusion.a
+         EpiDistortionCorrection.a
+         EpiReferenceScan.a
+         Flex.a
+         Foundation.a
+         FrameDownSampler.a
+         Gradwarp.a
+         Hdf5.a
+         Legacy.a
+         Maestro.a
+         MaestroModels.a
+         Math.a
+         MoCo.a
+         ProcessingControl.a
+         ProcessingFlow.a
+         Pure1.a
+         Pure2.a
+         ReceiveChainConfig.a
+         ScanArchiveConverterUtils.a
+         Scic.a
+         SpectroCommon.a
+         SpectroMCSI.a
+         SpectroMCSILegacy.a
+         SpectroMultiVoxel.a
+         SpectroSingleVoxel.a
+         Spiral.a
+         System.a
+         SystemServicesImplementation.a
+         SystemServicesInterface.a
+         TestSupport.a
+         Core.a
        )
 
-    message("Finding library: lib${libs}.a")
+    # list(APPEND ORCHESTRA_LIBRARIES $ENV{SDKTOP}/lib/lib${libs}.a)
 
-    list(APPEND ORCHESTRA_LIBRARIES $ENV{SDKTOP}/lib/lib${libs}.a)
+    message("Finding library: lib${libs}")
+
+    list(APPEND ORCHESTRA_LIBRARIES $ENV{SDKTOP}/lib/lib${libs})
+
 endforeach()
-
-# Orchestra HDF5 include directory
-find_path(ORCHESTRA_HDF5_INCLUDE_DIR hdf5.h
-    PATHS ${ORCHESTRA_TOPDIR}/3p   ${ORCHESTRA_TOPDIR}/include/recon/3p/mac/hdf5-1.8.12
-    PATH_SUFFIXES include
-    NO_DEFAULT_PATH)
-mark_as_advanced(${ORCHESTRA_HDF5_INCLUDE_DIR})
-list(APPEND ORCHESTRA_INCLUDE_DIRS ${ORCHESTRA_HDF5_INCLUDE_DIR})
 
 # Orchestra HDF5 libraries
-foreach(lib h5tools hdf5_cpp hdf5 Hdf5)
-    find_library(ORCHESTRA_HDF5_${lib}_LIBRARY ${lib}
-        PATHS ${ORCHESTRA_TOPDIR}   ${ORCHESTRA_TOPDIR}/3p   ${ORCHESTRA_TOPDIR}/include/recon/3p/mac/hdf5-1.8.12
+foreach(lib h5tools hdf5_cpp hdf5 Hdf5                                                             # HDF libraries
+            dcmdata dcmnet dcmtls oflog ofstd ssl crypto                                           # DCMTK   "
+            fftw3f fftw3                                                                           # FFTW3   "
+            boost_date_time boost_program_options boost_filesystem boost_regex boost_serialization # BOOST   "
+            boost_wserialization boost_thread boost_system                                         # BOOST   "
+            lapack blas f2c                                                                        # LAPACK  "
+            blitz)                                                                                 # BLITZ   "
+    # find_library(ORCHESTRA_BOOST_${lib}_LIBRARY "boost_${lib}"                                     # Pattern for finding library with
+                                                                                                     # common prefix, e.g. 'boost_' here.
+    find_library(ORCHESTRA_SUPPORT_${lib}_LIBRARY ${lib}
+        PATHS ${ORCHESTRA_TOPDIR}   ${ORCHESTRA_TOPDIR}/3p
         PATH_SUFFIXES lib
         NO_DEFAULT_PATH)
-    mark_as_advanced(${ORCHESTRA_HDF5_${lib}_LIBRARY})
-    list(APPEND ORCHESTRA_LIBRARIES ${ORCHESTRA_HDF5_${lib}_LIBRARY})
-endforeach()
-
-# Orchestra DCMTK libraries
-foreach(lib dcmdata dcmnet dcmtls oflog ofstd ssl crypto)
-    find_library(ORCHESTRA_DCMTK_${lib}_LIBRARY ${lib}
-        PATHS ${ORCHESTRA_TOPDIR}/3p   ${ORCHESTRA_TOPDIR}/include/recon/3p/mac/dcmtk-3.6.1_20140617
-        PATH_SUFFIXES lib
-        NO_DEFAULT_PATH)
-    mark_as_advanced(${ORCHESTRA_DCMTK_${lib}_LIBRARY})
-    list(APPEND ORCHESTRA_LIBRARIES ${ORCHESTRA_DCMTK_${lib}_LIBRARY})
-endforeach()
-
-# Orchestra FFTW libraries
-foreach(lib fftw3f fftw3)
-    find_library(ORCHESTRA_FFTW_${lib}_LIBRARY ${lib}
-        PATHS ${ORCHESTRA_TOPDIR}/3p   ${ORCHESTRA_TOPDIR}/include/recon/3p/mac/fftw-3.2.2
-        PATH_SUFFIXES lib
-        NO_DEFAULT_PATH)
-    mark_as_advanced(${ORCHESTRA_FFTW_${lib}_LIBRARY})
-    list(APPEND ORCHESTRA_LIBRARIES ${ORCHESTRA_FFTW_${lib}_LIBRARY})
-endforeach()
-
-# Orchestra Boost include directory
-find_path(ORCHESTRA_BOOST_INCLUDE_DIR boost/version.hpp
-    PATHS ${ORCHESTRA_TOPDIR}/3p   ${ORCHESTRA_TOPDIR}/include/recon/3p/mac/boost_1_63_0
-    PATH_SUFFIXES include include/boost
-    NO_DEFAULT_PATH)
-if(ORCHESTRA_BOOST_INCLUDE_DIR)
-    mark_as_advanced(${ORCHESTRA_BOOST_INCLUDE_DIR})
-    list(APPEND ORCHESTRA_INCLUDE_DIRS ${ORCHESTRA_BOOST_INCLUDE_DIR})
-else()
-    message("Orchestra Boost include dir not found")
-endif()
-
-# Orchestra Boost libraries
-foreach(lib date_time program_options filesystem regex serialization wserialization thread system)
-    find_library(ORCHESTRA_BOOST_${lib}_LIBRARY "boost_${lib}"
-        PATHS ${ORCHESTRA_TOPDIR}/3p   ${ORCHESTRA_TOPDIR}/include/recon/3p/mac/boost_1_63_0
-        PATH_SUFFIXES lib
-        NO_DEFAULT_PATH)
-    mark_as_advanced(${ORCHESTRA_BOOST_${lib}_LIBRARY})
-    list(APPEND ORCHESTRA_LIBRARIES ${ORCHESTRA_BOOST_${lib}_LIBRARY})
-endforeach()
-
-# Orchestra LAPACK libraries
-foreach(lib lapack blas f2c)
-    find_library(ORCHESTRA_LAPACK_${lib}_LIBRARY ${lib}
-        PATHS ${ORCHESTRA_TOPDIR}/3p   ${ORCHESTRA_TOPDIR}/include/recon/3p/mac/clapack-3.2.1
-        PATH_SUFFIXES lib
-        NO_DEFAULT_PATH)
-    mark_as_advanced(${ORCHESTRA_LAPACK_${lib}_LIBRARY})
-    list(APPEND ORCHESTRA_LIBRARIES ${ORCHESTRA_LAPACK_${lib}_LIBRARY})
+    mark_as_advanced(${ORCHESTRA_SUPPORT_${lib}_LIBRARY})
+    list(APPEND ORCHESTRA_LIBRARIES ${ORCHESTRA_SUPPORT_${lib}_LIBRARY})
 endforeach()
 
 # Orchestra Blitz include dir
 find_path(ORCHESTRA_BLITZ_INCLUDE_DIR blitz/blitz.h
-    PATHS ${ORCHESTRA_TOPDIR}/3p   ${ORCHESTRA_TOPDIR}/include/recon/3p/mac/blitz-0.10
+    PATHS ${ORCHESTRA_TOPDIR}   ${ORCHESTRA_TOPDIR}/3p
     PATH_SUFFIXES include)
 if(ORCHESTRA_BLITZ_INCLUDE_DIR)
     mark_as_advanced(${ORCHESTRA_BLITZ_INCLUDE_DIR})
     list(APPEND ORCHESTRA_INCLUDE_DIRS ${ORCHESTRA_BLITZ_INCLUDE_DIR})
 endif()
 
-# Orchestra Blitz library
-find_library(ORCHESTRA_BLITZ_LIBRARY blitz
-    PATHS ${ORCHESTRA_TOPDIR}/3p   ${ORCHESTRA_TOPDIR}/include/recon/3p/mac/blitz-0.10
-    PATH_SUFFIXES lib
-    NO_DEFAULT_PATH)
-if(ORCHESTRA_BLITZ_LIBRARY)
-    mark_as_advanced(${ORCHESTRA_BLITZ_LIBRARY})
-    list(APPEND ORCHESTRA_LIBRARIES ${ORCHESTRA_BLITZ_LIBRARY})
-endif()
+link_directories (${ORCHESTRA_TOPDIR}/lib   ${ORCHESTRA_TOPDIR}/3p/lib)
 
 include_directories (${ORCHESTRA_INCLUDE_DIR} ${ORCHESTRA_INCLUDE_DIRS})
 
