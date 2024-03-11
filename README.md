@@ -2,7 +2,7 @@
 
 Orchestra conversion tools
 
-## To build and install the tools to convert GE raw files (using Orchestra 2.1-1) into ISMRMRD files:
+## To manually build and install the tools to convert GE raw files (using Orchestra 2.1-1) into ISMRMRD files:
 
    As of Orchestra 2.1-1, GE now provides all support libraries to link against, when building
    against Orchestra's API. Library versions have also up been updated / modernized, therefore
@@ -94,10 +94,13 @@ Orchestra conversion tools
     make install
     cd ../
     ```
-1. Make sure `$ISMRMRD_HOME/bin` and `$GE_TOOLS_HOME/bin` are added to your environment's `PATH` variable,
+
+## Converting GE raw files into ISMRMRD files:
+
+Make sure `$ISMRMRD_HOME/bin` and `$GE_TOOLS_HOME/bin` are added to your environment's `PATH` variable,
    and that `$ISMRMRD_HOME/lib` and `$GE_TOOLS_HOME/lib` are added to your environment's `LD_LIBRARY_PATH`
    variable, to be able to use the libraries and binaries supplied with these tools.
-
+   
 1. A typical command line to convert the supplied P-file using this library is:
 
    ```bash
@@ -121,3 +124,18 @@ Orchestra conversion tools
 
    Sample raw data files are now in the 'sampleData' directory.
 
+## Building a Docker image containing ge2ismrmrd tools
+
+1. Copy the orchestra-sdk-[version].tar.gz into your local ge_to_ismrmrd respository
+
+1. Build a Docker image using:
+
+   ```bash
+   docker build --file Dockerfile --tag ge_to_ismrmrd .
+   ```
+
+1. An example of using ge_to_ismrmrd Docker image to convert GE raw files:
+
+    ```bash
+    docker run -it --rm -v `pwd`/src/config:/config -v `pwd`/sampleData:/sampleData ge_to_ismrmrd ge2ismrmrd -v -p GenericConverter -x /config/default.xsl /sampleData/ScanArchive_FSE.h5 -o /sampleData/ismrmrd_FSE.h5
+    ```
