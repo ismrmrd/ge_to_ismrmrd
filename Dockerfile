@@ -1,4 +1,4 @@
-FROM ubuntu:24.04 as ismrmrd_base
+FROM ubuntu:latest as ismrmrd_base
 
 ARG DEBIAN_FRONTEND=noninteractive
 ENV TZ=America/Chicago
@@ -56,7 +56,7 @@ RUN cd $BUILDTOP && \
 RUN cd $BUILDTOP/ismrmrd/lib && tar czvf libismrmrd.tgz libismrmrd*
 
 # ----- Start another clean build without all of the build dependencies of ge_to_ismrmrd -----
-FROM ubuntu:24.04
+FROM ubuntu:latest
 
 ENV GE_TOOLS_HOME /opt/code/ge_to_ismrmrd/ge-tools
 
