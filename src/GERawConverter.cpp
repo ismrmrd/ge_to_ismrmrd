@@ -347,7 +347,20 @@ std::string GERawConverter::ge_header_to_xml(GERecon::Legacy::LxDownloadDataPoin
     writer.formatElement("ScanCenter", "%f",       processingControl->Value<float>("ScanCenter"));
     writer.formatElement("Landmark", "%f",         processingControl->Value<float>("Landmark"));
     writer.formatElement("CoilConfigUID", "%u",    processingControl->Value<unsigned int>("CoilConfigUID"));
-    writer.formatElement("RawPassSize", "%llu",    processingControl->Value<int>("RawPassSize"));
+    try {
+        // Attempt to use `int` for RawPassSize
+        writer.formatElement("RawPassSize", "%llu", processingControl->Value<int>("RawPassSize"));
+    } catch (const std::exception& e) {
+        std::cerr << "Failed to retrieve RawPassSize as int: " << e.what() << ". Trying unsigned long long instead." << std::endl;
+        try {
+            // Fallback to `unsigned long long` if the first attempt fails
+            writer.formatElement("RawPassSize", "%llu", processingControl->Value<unsigned long long>("RawPassSize"));
+        } catch (const std::exception& e) {
+            // If both attempts fail, set a default value and continue
+            std::cerr << "Failed to retrieve RawPassSize as unsigned long long: " << e.what() << ". Using default value 0." << std::endl;
+            writer.formatElement("RawPassSize", "%llu", 0ULL); // Default value
+        }
+    }
 
     // ReconstructionParameters
     writer.addBooleanElement("CreateMagnitudeImages", processingControl->Value<bool>("CreateMagnitudeImages"));
